@@ -48,11 +48,12 @@ exports.register = async (req, res) => {
 
     const token = signToken(user);
 
+    // Send welcome email (non-blocking, don't fail registration if email fails)
     sendEmail(
       user.email,
       "Welcome to Notesilo 🎉",
       `<p>Hello ${username || "User"},</p><p>Thanks for signing up! You're ready to take notes 🚀</p>`
-    );
+    ).catch(emailErr => console.error("Welcome email failed (non-critical):", emailErr.message));
 
     res.json({
       msg: "Registered",

@@ -13,7 +13,7 @@ export default defineConfig({
     allowedHosts: ['.ngrok-free.app'], // works for all ngrok links
     proxy: {
       '/api': {
-        target: 'http://localhost:5000', // 👈 your backend
+        target: 'http://localhost:2001', // 👈 your backend
         changeOrigin: true,
         secure: false,
       },

@@ -2,7 +2,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import "intro.js/introjs.css";
 
 import "./App.css";
-import Login from "./components/login";
+import Home from "./components/Home";
 import Register from "./components/Register";
 import Notes from "./components/Notes";
 import OauthSuccess from "./components/Oauthsuccess";
@@ -20,7 +20,7 @@ function App() {
     <BrowserRouter>
     <Toaster position="top-right" reverseOrder={false} />
       <Routes>
-        <Route path="/" element={<Login />} />
+        <Route path="/" element={<Home />} />
         <Route path="/register" element={<Register />} />
         <Route path="/notes" element={<Notes />} />
         <Route path="/register" element={<Register />} />
