@@ -25,9 +25,7 @@ const Login = () => {
             className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
           />
 
-          <a href="#" className="text-sm text-blue-600 hover:underline self-end">
-            Forgot Password?
-          </a>
+          <Link className="text-sm text-blue-600 hover:underline self-end" to={"/Forgotpassword"}>forgot password?</Link>
 
           <button
             type="submit"
