@@ -1,25 +1,107 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useState } from "react";
+import axios from "axios";
+import NoteEditor from "./NoteEditor";
 
 export default function Notes() {
   const [notes, setNotes] = useState([]);
+  const [username, setUsername] = useState("user");
+  const [selectedNote, setSelectedNote] = useState(null);
+  const token = localStorage.getItem("token");
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    fetch("http://localhost:5000/api/notes", {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then((res) => res.json())
-      .then((data) => setNotes(data.notes || []));
+    const storedUsername = localStorage.getItem("username") || "user";
+    setUsername(storedUsername);
   }, []);
 
+  const fetchNotes = async () => {
+    try {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/notes`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (Array.isArray(res.data)) setNotes(res.data);
+      else if (res.data && typeof res.data === "object") setNotes([res.data]);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  useEffect(() => {
+    fetchNotes();
+  }, [fetchNotes, token]);
+
+  const handleAddNote = () => {
+    setSelectedNote({}); // empty note
+  };
+
+  const handleNoteSave = (savedNote) => {
+    // If new note, append to list
+    setNotes((prev) => {
+      const exists = prev.find((n) => n._id === savedNote._id);
+      if (exists) {
+        return prev.map((n) => (n._id === savedNote._id ? savedNote : n));
+      }
+      return [savedNote, ...prev];
+    });
+    setSelectedNote(savedNote);
+  };
+  const handleLogout = () => {
+  console.log("🚪 Logging out...");
+  localStorage.removeItem("token");
+  localStorage.removeItem("username");
+  window.location.href = "/login";
+};
+
   return (
-    <div>
-      <h2>Your Notes</h2>
-      <ul>
-        {notes.map((n) => (
-          <li key={n._id}>{n.text}</li>
-        ))}
-      </ul>
+    <div className="flex flex-col min-h-screen">
+      <header className="flex justify-between items-center p-4 bg-blue-600 text-white">
+  <h1 className="text-xl font-bold">Welcome, {username}</h1>
+  <div className="flex gap-2">
+    <button
+      onClick={handleAddNote}
+      className="bg-green-500 hover:bg-green-600 px-4 py-2 rounded"
+    >
+      Add Note
+    </button>
+    <button
+      onClick={handleLogout}
+      className="bg-red-500 hover:bg-red-600 px-4 py-2 rounded"
+    >
+      Logout
+    </button>
+  </div>
+</header>
+
+
+      <div className="flex flex-1 overflow-hidden">
+        <aside className="w-1/3 p-4 border-r overflow-y-auto">
+          <h2 className="font-semibold mb-4">Your Notes</h2>
+          {notes.length === 0 ? (
+            <p>No notes found</p>
+          ) : (
+            notes.map((note) => (
+              <div
+                key={note._id || note.title}
+                onClick={() => setSelectedNote(note)}
+                className={`p-3 mb-2 border rounded cursor-pointer ${
+                  selectedNote === note ? "bg-gray-200" : "hover:bg-gray-100"
+                }`}
+              >
+                <h3 className="font-semibold">{note.title || "Untitled Note"}</h3>
+              </div>
+            ))
+          )}
+        </aside>
+
+        <section className="flex-1 p-4">
+          <h2 className="text-lg font-semibold mb-2">Editor</h2>
+          {selectedNote ? (
+            <NoteEditor note={selectedNote} token={token} onSave={handleNoteSave} />
+          ) : (
+            <p className="text-gray-500">Select a note or add a new one</p>
+          )}
+        </section>
+      </div>
     </div>
   );
 }
