@@ -58,11 +58,26 @@ exports.me = async (req, res) => {
 };
 
 // Google OAuth success
+// Google OAuth success
 exports.oauthSuccessRedirect = (req, res) => {
-  const token = jwt.sign({ id: req.user._id }, process.env.JWT_SECRET, { expiresIn: "7d" });
-  const redirectUrl = `${process.env.CLIENT_URL}/oauth-success?token=${token}`;
-  res.redirect(redirectUrl);
+  try {
+    console.log("🔑 Google OAuth callback triggered");
+    console.log("👤 User from passport:", req.user);
+
+    const token = jwt.sign({ id: req.user._id }, process.env.JWT_SECRET, { expiresIn: "7d" });
+    console.log("✅ Token generated:", token);
+
+    // Send both token and username in query params
+    const redirectUrl = `${process.env.CLIENT_URL}/oauth-success?token=${token}&username=${encodeURIComponent(req.user.username)}`;
+
+    console.log("🌐 Redirecting to:", redirectUrl);
+    res.redirect(redirectUrl);
+  } catch (err) {
+    console.error("❌ OAuth redirect error:", err);
+    res.status(500).send("OAuth redirect failed");
+  }
 };
+
 
 // ---------------- PROFILE ----------------
 
