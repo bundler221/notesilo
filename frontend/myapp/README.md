@@ -1,12 +1,31 @@
-# React + Vite
+Sure! Here’s a concise list of the **4 main routes we’ve tested so far** that you can add to your README:
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+---
 
-Currently, two official plugins are available:
+## 📝 Tested API Routes
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+| Route                       | Method | Description                                        | Protected        |
+| --------------------------- | ------ | -------------------------------------------------- | ---------------- |
+| `/api/auth/register`        | POST   | Register a new user with email/username & password | ❌                |
+| `/api/auth/login`           | POST   | Login user and receive JWT token                   | ❌                |
+| `/api/auth/me`              | GET    | Get current logged-in user details                 | ✅ (JWT required) |
+| `/api/auth/update-profile`  | PUT    | Update username (and other profile fields)         | ✅ (JWT required) |
+| `/api/auth/update-password` | PUT    | Update user password (email/password users only)   | ✅ (JWT required) |
+| `/api/auth/delete-account`  | DELETE | Delete current user account                        | ✅ (JWT required) |
+| `/api/notes`                | POST   | Create a new note                                  | ✅ (JWT required) |
+| `/api/notes`                | GET    | Get all notes of the logged-in user                | ✅ (JWT required) |
 
-## Expanding the ESLint configuration
+---
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+💡 **Notes:**
+
+* For protected routes, include header:
+
+```
+Authorization: Bearer <JWT_TOKEN>
+```
+
+* Requests tested using **Postman / Thunder Client**.
+* Notes content can be plain text or Markdown.
+
+---

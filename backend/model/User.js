@@ -2,11 +2,12 @@ const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema(
   {
-    username: { type: String },
+    username: { type: String }, // may be filled later
     email: { type: String, required: true, unique: true, index: true },
-    passwordHash: { type: String }, // present for email/password users
-    googleId: { type: String },     // present for Google users
+    passwordHash: { type: String }, // only for email/password users
+    googleId: { type: String },     // only for Google users
     role: { type: String, enum: ["user", "admin"], default: "user" },
+    isProfileComplete: { type: Boolean, default: false }, // new field
   },
   { timestamps: true }
 );
