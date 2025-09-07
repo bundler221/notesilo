@@ -4,10 +4,12 @@ Sure! Here’s a concise list of the **4 main routes we’ve tested so far** tha
 
 ## 📝 Tested API Routes
 
+Here’s a list of the main routes we’ve tested so far:
+
 | Route                       | Method | Description                                        | Protected        |
 | --------------------------- | ------ | -------------------------------------------------- | ---------------- |
-| `/api/auth/register`        | POST   | Register a new user with email/username & password | ❌                |
-| `/api/auth/login`           | POST   | Login user and receive JWT token                   | ❌                |
+| `/api/auth/register`        | POST   | Register a new user with email/username & password | ❌               |
+| `/api/auth/login`           | POST   | Login user and receive JWT token                   | ❌               |
 | `/api/auth/me`              | GET    | Get current logged-in user details                 | ✅ (JWT required) |
 | `/api/auth/update-profile`  | PUT    | Update username (and other profile fields)         | ✅ (JWT required) |
 | `/api/auth/update-password` | PUT    | Update user password (email/password users only)   | ✅ (JWT required) |
@@ -16,6 +18,11 @@ Sure! Here’s a concise list of the **4 main routes we’ve tested so far** tha
 | `/api/notes`                | GET    | Get all notes of the logged-in user                | ✅ (JWT required) |
 
 ---
+
+### 🔑 Authentication
+For all protected routes, include the header:
+
+
 
 💡 **Notes:**
 
