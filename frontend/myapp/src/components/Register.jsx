@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { register } from "../utils/auth";
 
 export default function Register() {
@@ -20,35 +20,41 @@ export default function Register() {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen">
-      <h2 className="text-xl mb-4">Register</h2>
+    <>
+      <Link
+        className="text-blue-600 hover:underline font-medium"
+        to="/"
+      >Home</Link>
+      <div className="flex flex-col items-center justify-center min-h-screen">
+        <h2 className="text-xl mb-4">Register</h2>
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-2 w-64">
-        <input
-          type="text"
-          placeholder="Username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          className="border p-2"
-        />
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="border p-2"
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="border p-2"
-        />
-        <button type="submit" className="bg-green-500 text-white p-2">
-          Register
-        </button>
-      </form>
-    </div>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-2 w-64">
+          <input
+            type="text"
+            placeholder="Username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            className="border p-2"
+          />
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="border p-2"
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="border p-2"
+          />
+          <button type="submit" className="bg-green-500 text-white p-2">
+            Register
+          </button>
+        </form>
+      </div>
+    </>
   );
 }

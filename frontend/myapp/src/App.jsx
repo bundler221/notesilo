@@ -6,12 +6,13 @@ import Notes from "./components/Notes";
 import OauthSuccess from "./components/OauthSuccess";
 import ResetPassword from "./components/ResetPassword";
 import ForgotPassword from "./components/forgotpassword";
-
+import Home from "./components/Home"
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/login" element={<Login />} />
+        {/* <Route path="/" element = {<Home/>} /> */}
+        <Route path="/" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/notes" element={<Notes />} />
         <Route path="/oauth-success" element={<OauthSuccess />}

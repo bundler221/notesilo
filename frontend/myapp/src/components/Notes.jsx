@@ -62,7 +62,7 @@ export default function Notes() {
   const handleLogout = () => {
     console.log("🚪 Logging out...");
     localStorage.removeItem("token");
-    window.location.href = "/login";
+    window.location.href = "/";
   };
 
   return (
