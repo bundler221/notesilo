@@ -33,24 +33,7 @@ router.get(
     failureRedirect: `${process.env.CLIENT_URL}/login?error=oauth`,
     session: false,
   }),
-  (req, res) => {
-    console.log("🔑 Google OAuth callback triggered");
-    console.log("👤 User from passport:", req.user);
-
-    try {
-      const token = jwt.sign(
-        { id: req.user._id },
-        process.env.JWT_SECRET,
-        { expiresIn: "7d" }
-      );
-      console.log("✅ Token generated:", token);
-
-      res.redirect(`${process.env.CLIENT_URL}/oauth-success?token=${token}`);
-    } catch (err) {
-      console.error("❌ Error generating token:", err);
-      res.redirect(`${process.env.CLIENT_URL}/login?error=token`);
-    }
-  }
+  oauthSuccessRedirect   // ✅ use the controller instead of inline fn
 );
 
 

@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import NoteEditor from "./NoteEditor";
+import jwtDecode from "jwt-decode";
 
 export default function Notes() {
   const [notes, setNotes] = useState([]);
@@ -9,12 +10,29 @@ export default function Notes() {
   const [selectedNote, setSelectedNote] = useState(null);
   const token = localStorage.getItem("token");
 
+  // Decode JWT to get username
   useEffect(() => {
-    const storedUsername = localStorage.getItem("username") || "user";
-    setUsername(storedUsername);
-  }, []);
+  const params = new URLSearchParams(window.location.search);
+  const oauthUsername = params.get("username");
+  if (oauthUsername) {
+    localStorage.setItem("username", oauthUsername);
+    setUsername(oauthUsername);
+  } else if (token) {
+    try {
+      const decoded = jwtDecode(token);
+      console.log(decoded);
+      
+      setUsername(decoded.username || "user");
+    } catch (err) {
+      console.error("Invalid token:", err);
+      setUsername("user");
+    }
+  }
+}, [token]);
+
 
   const fetchNotes = async () => {
+    if (!token) return;
     try {
       const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/notes`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -28,50 +46,44 @@ export default function Notes() {
 
   useEffect(() => {
     fetchNotes();
-  }, [fetchNotes, token]);
+  }, [token]);
 
-  const handleAddNote = () => {
-    setSelectedNote({}); // empty note
-  };
+  const handleAddNote = () => setSelectedNote({}); // empty note
 
   const handleNoteSave = (savedNote) => {
-    // If new note, append to list
     setNotes((prev) => {
       const exists = prev.find((n) => n._id === savedNote._id);
-      if (exists) {
-        return prev.map((n) => (n._id === savedNote._id ? savedNote : n));
-      }
+      if (exists) return prev.map((n) => (n._id === savedNote._id ? savedNote : n));
       return [savedNote, ...prev];
     });
     setSelectedNote(savedNote);
   };
+
   const handleLogout = () => {
-  console.log("🚪 Logging out...");
-  localStorage.removeItem("token");
-  localStorage.removeItem("username");
-  window.location.href = "/login";
-};
+    console.log("🚪 Logging out...");
+    localStorage.removeItem("token");
+    window.location.href = "/login";
+  };
 
   return (
     <div className="flex flex-col min-h-screen">
       <header className="flex justify-between items-center p-4 bg-blue-600 text-white">
-  <h1 className="text-xl font-bold">Welcome, {username}</h1>
-  <div className="flex gap-2">
-    <button
-      onClick={handleAddNote}
-      className="bg-green-500 hover:bg-green-600 px-4 py-2 rounded"
-    >
-      Add Note
-    </button>
-    <button
-      onClick={handleLogout}
-      className="bg-red-500 hover:bg-red-600 px-4 py-2 rounded"
-    >
-      Logout
-    </button>
-  </div>
-</header>
-
+        <h1 className="text-xl font-bold">Welcome, {username}</h1>
+        <div className="flex gap-2">
+          <button
+            onClick={handleAddNote}
+            className="bg-green-500 hover:bg-green-600 px-4 py-2 rounded"
+          >
+            Add Note
+          </button>
+          <button
+            onClick={handleLogout}
+            className="bg-red-500 hover:bg-red-600 px-4 py-2 rounded"
+          >
+            Logout
+          </button>
+        </div>
+      </header>
 
       <div className="flex flex-1 overflow-hidden">
         <aside className="w-1/3 p-4 border-r overflow-y-auto">

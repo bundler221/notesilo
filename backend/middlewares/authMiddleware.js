@@ -3,6 +3,7 @@ const User = require("../model/User");
 
 async function protect(req, res, next) {
   try {
+    console.log(req.method);
     const auth = req.headers.authorization || "";
     const token = auth.startsWith("Bearer ") ? auth.slice(7) : null;
     if (!token) return res.status(401).json({ msg: "Not authorized" });

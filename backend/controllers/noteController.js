@@ -2,6 +2,7 @@ const Note = require("../model/Note");
 
 exports.createNote = async (req, res) => {
   try {
+    console.log(req.method);
     const { title, content, tags } = req.body;
     const note = await Note.create({
       title,
@@ -18,6 +19,7 @@ exports.createNote = async (req, res) => {
 
 exports.getMyNotes = async (req, res) => {
   try {
+    console.log(req.method);
     const notes = await Note.find({ owner: req.user._id }).sort({ updatedAt: -1 });
     res.json(notes);
   } catch (err) {
@@ -27,6 +29,7 @@ exports.getMyNotes = async (req, res) => {
 
 exports.getNoteById = async (req, res) => {
   try {
+    console.log(req.method);
     res.json(req.note); // set by access middleware
   } catch (err) {
     res.status(500).json({ msg: "Fetch failed", error: err.message });
@@ -35,6 +38,7 @@ exports.getNoteById = async (req, res) => {
 
 exports.updateNote = async (req, res) => {
   try {
+    console.log(req.method);
     const { title, content, tags } = req.body;
     const note = req.note;
     if (typeof title === "string") note.title = title;
@@ -49,6 +53,7 @@ exports.updateNote = async (req, res) => {
 
 exports.deleteNote = async (req, res) => {
   try {
+    console.log(req.method);
     await req.note.deleteOne();
     res.json({ msg: "Note deleted" });
   } catch (err) {
@@ -58,6 +63,7 @@ exports.deleteNote = async (req, res) => {
 
 exports.shareNote = async (req, res) => {
   try {
+    console.log(req.method);
     const { userId, accessLevel } = req.body; // accessLevel: read | write | comment
     const note = req.note; // owner-only ensured by middleware
 

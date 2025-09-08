@@ -5,39 +5,15 @@ export default function OauthSuccess() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    console.log("🔍 OauthSuccess mounted");
-
     const params = new URLSearchParams(window.location.search);
-    const tokenFromUrl = params.get("token");
-    const usernameFromUrl = params.get("username"); // 👈 backend should pass this
-    const tokenFromStorage = localStorage.getItem("token");
-    const usernameFromStorage = localStorage.getItem("username");
+    const token = params.get("token");
+    const username = params.get("username");
 
-    console.log("📥 Extracted from URL -> token:", tokenFromUrl, "| username:", usernameFromUrl);
-    console.log("💾 Already in localStorage -> token:", tokenFromStorage, "| username:", usernameFromStorage);
+    if (token) localStorage.setItem("token", token);
+    if (username) localStorage.setItem("username", username);
 
-    if (tokenFromUrl) {
-      try {
-        localStorage.setItem("token", tokenFromUrl);
-        console.log("✅ Token stored in localStorage");
-
-        if (usernameFromUrl) {
-          localStorage.setItem("username", usernameFromUrl);
-          console.log("✅ Username stored in localStorage:", usernameFromUrl);
-        }
-
-        navigate("/notes");
-      } catch (err) {
-        console.error("❌ Failed to save token/username:", err);
-      }
-    } else if (tokenFromStorage) {
-      console.log("✅ Token already in localStorage, skipping redirect");
-      navigate("/notes");
-    } else {
-      console.warn("⚠️ No token found, redirecting to login");
-      navigate("/login");
-    }
+    navigate("/notes"); // redirect to notes page
   }, [navigate]);
 
-  return <p>Logging you in...</p>;
+  return <p>Logging in...</p>;
 }
