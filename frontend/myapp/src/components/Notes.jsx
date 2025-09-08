@@ -86,7 +86,7 @@ export default function Notes() {
       </header>
 
       <div className="flex flex-1 overflow-hidden">
-        <aside className="w-1/3 p-4 border-r overflow-y-auto">
+        <aside className="w-1/6 p-4 border-r overflow-y-auto">
           <h2 className="font-semibold mb-4">Your Notes</h2>
           {notes.length === 0 ? (
             <p>No notes found</p>

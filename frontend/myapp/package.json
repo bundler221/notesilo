@@ -10,7 +10,15 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@milkdown/core": "^7.15.5",
+    "@milkdown/preset-commonmark": "^7.15.5",
+    "@milkdown/react": "^7.15.5",
+    "@milkdown/theme-nord": "^7.15.5",
     "@tailwindcss/vite": "^4.1.13",
+    "@tiptap/react": "^3.4.1",
+    "@tiptap/starter-kit": "^3.4.1",
+    "@uiw/react-markdown-preview": "^5.1.5",
+    "@uiw/react-md-editor": "^4.0.8",
     "axios": "^1.11.0",
     "jsonwebtoken": "^9.0.2",
     "jwt-decode": "^3.1.2",
