@@ -19,13 +19,44 @@ exports.createNote = async (req, res) => {
 
 exports.getMyNotes = async (req, res) => {
   try {
-    console.log(req.method);
-    const notes = await Note.find({ owner: req.user._id }).sort({ updatedAt: -1 });
-    res.json(notes);
+    const userId = req.user._id;
+
+    const notes = await Note.find({
+      $or: [
+        { owner: userId },
+        { "sharedWith.userId": userId } // ✅ includes shared notes
+      ]
+    })
+      .sort({ updatedAt: -1 })
+      .lean(); // convert to plain JS objects so we can safely mutate
+
+    // Add `canWrite` property based on ownership / accessLevel
+    const enrichedNotes = notes.map((note) => {
+      let canWrite = false;
+
+      if (note.owner.toString() === userId.toString()) {
+        canWrite = true;
+      } else {
+        const shared = note.sharedWith.find(
+          (sw) => sw.userId.toString() === userId.toString()
+        );
+        if (shared && shared.accessLevel === "write") {
+          canWrite = true;
+        }
+      }
+
+      return {
+        ...note,
+        canWrite, // 👈 extra flag for frontend
+      };
+    });
+
+    res.json(enrichedNotes);
   } catch (err) {
     res.status(500).json({ msg: "Fetch failed", error: err.message });
   }
 };
+
 
 exports.getNoteById = async (req, res) => {
   try {

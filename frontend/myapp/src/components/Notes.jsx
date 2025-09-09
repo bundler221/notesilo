@@ -106,13 +106,19 @@ export default function Notes() {
         </aside>
 
         <section className="flex-1 p-4">
-          <h2 className="text-lg font-semibold mb-2">Editor</h2>
-          {selectedNote ? (
-            <NoteEditor note={selectedNote} token={token} onSave={handleNoteSave} />
-          ) : (
-            <p className="text-gray-500">Select a note or add a new one</p>
-          )}
-        </section>
+  <h2 className="text-lg font-semibold mb-2">Editor</h2>
+  {selectedNote ? (
+    <NoteEditor
+      note={selectedNote}
+      token={token}
+      onSave={handleNoteSave}
+      canEdit={selectedNote.canWrite} // ✅ use backend flag
+    />
+  ) : (
+    <p className="text-gray-500">Select a note or add a new one</p>
+  )}
+</section>
+
       </div>
     </div>
   );

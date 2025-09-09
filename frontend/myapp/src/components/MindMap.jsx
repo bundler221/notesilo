@@ -1,4 +1,4 @@
- 
+// src/components/MindMap.jsx
 import { useEffect, useState } from "react";
 import ReactFlow, { MiniMap, Controls, Background } from "reactflow";
 import 'reactflow/dist/style.css';
@@ -13,20 +13,19 @@ export default function MindMap({ token }) {
       if (!token) return;
 
       try {
-        const res = await axios.get("http://localhost:5000/api/notes/graph/all", {
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/notes/graph/all`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
         const { nodes: backendNodes, links } = res.data;
 
-        // Convert nodes for React Flow
-        const flowNodes = backendNodes.map(node => ({
+        // Simple grid layout instead of random
+        const flowNodes = backendNodes.map((node, i) => ({
           id: node.id,
           data: { label: node.title },
-          position: { x: Math.random() * 500, y: Math.random() * 500 }, // simple layout
+          position: { x: (i % 5) * 200, y: Math.floor(i / 5) * 150 },
         }));
 
-        // Convert links to edges for React Flow
         const flowEdges = links.map(link => ({
           id: `${link.source}-${link.target}`,
           source: link.source,
@@ -37,7 +36,6 @@ export default function MindMap({ token }) {
 
         setNodes(flowNodes);
         setEdges(flowEdges);
-
       } catch (err) {
         console.error("Failed to fetch graph:", err);
       }
@@ -47,7 +45,7 @@ export default function MindMap({ token }) {
   }, [token]);
 
   return (
-    <div style={{ height: 500, border: "1px solid #ddd", borderRadius: 8 }}>
+    <div style={{ height: "80vh", border: "1px solid #ddd", borderRadius: 8 }}>
       <ReactFlow nodes={nodes} edges={edges} fitView>
         <MiniMap />
         <Controls />

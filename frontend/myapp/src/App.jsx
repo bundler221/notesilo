@@ -3,10 +3,9 @@ import "./App.css";
 import Login from "./components/login";
 import Register from "./components/Register";
 import Notes from "./components/Notes";
-import OauthSuccess from "./components/OauthSuccess";
+import OauthSuccess from "./components/Oauthsuccess";
 import ResetPassword from "./components/ResetPassword";
 import ForgotPassword from "./components/forgotpassword";
-import Home from "./components/Home"
 function App() {
   return (
     <BrowserRouter>
