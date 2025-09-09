@@ -6,6 +6,7 @@ const connectDB = require("./db");
 
 const authRoutes = require("./routes/authRoutes");
 const noteRoutes = require("./routes/noteRoutes");
+const graphRoutes = require("./routes/graphRoutes");
 
 const app = express();
 connectDB();
@@ -21,6 +22,8 @@ app.use(passport.initialize());
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/notes", noteRoutes);
+app.use("/api/graph", graphRoutes);
+
 
 // Health check
 app.get("/api/health", (_req, res) => res.json({ ok: true }));

@@ -3,8 +3,11 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import NoteEditor from "./NoteEditor";
 import jwtDecode from "jwt-decode";
+import { Navigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 export default function Notes() {
+  const navigate = useNavigate(); 
   const [notes, setNotes] = useState([]);
   const [username, setUsername] = useState("user");
   const [selectedNote, setSelectedNote] = useState(null);
@@ -75,6 +78,12 @@ export default function Notes() {
             className="bg-green-500 hover:bg-green-600 px-4 py-2 rounded"
           >
             Add Note
+          </button>
+          <button
+            onClick={() => navigate("/graph")}   // ✅ fixed
+            className="bg-yellow-500 hover:bg-yellow-600 px-4 py-2 rounded"
+          >
+            Graph
           </button>
           <button
             onClick={handleLogout}

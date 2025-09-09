@@ -8,6 +8,17 @@ const sharedWithSchema = new mongoose.Schema(
   { _id: false }
 );
 
+// New schema for references (connections between notes)
+const referenceSchema = new mongoose.Schema(
+  {
+    fromHeading: { type: String, default: "" }, // Optional: e.g., "Introduction" in source note
+    toNote: { type: mongoose.Schema.Types.ObjectId, ref: "Note", required: true }, // Target note ID
+    toHeading: { type: String, default: "" }, // Optional: e.g., "Conclusion" in target note
+    type: { type: String, enum: ["link", "reference", "dependency"], default: "link" }, // Optional type for future filtering
+  },
+  { _id: false }
+);
+
 const noteSchema = new mongoose.Schema(
   {
     title: { type: String, required: true },
@@ -16,6 +27,7 @@ const noteSchema = new mongoose.Schema(
     sharedWith: [sharedWithSchema],          // for RBAC
     tags: [{ type: String, index: true }],
     images: [String],                        // Cloudinary URLs (later)
+    references: [referenceSchema],           // 👈 New: array of connections to other notes
   },
   { timestamps: true }
 );
