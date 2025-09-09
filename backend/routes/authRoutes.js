@@ -60,4 +60,34 @@ const express = require("express");
   router.put("/update-password", protect, updatePassword);
   router.delete("/delete-account", protect, deleteAccount);
 
+// In authRoutes.js
+router.post("/reset-password", async (req, res) => {
+  try {
+    const { token, password } = req.body;
+
+    if (!token || !password) {
+      return res.status(400).json({ msg: "Invalid request" });
+    }
+
+    // verify token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    // find user by decoded.id
+    const user = await User.findById(decoded.id);
+    if (!user) {
+      return res.status(400).json({ msg: "Invalid or expired token" });
+    }
+
+    // update password (hash before saving)
+    user.password = password;
+    await user.save();
+
+    res.json({ msg: "Password reset successful" });
+  } catch (err) {
+    console.error(err);
+    res.status(400).json({ msg: "Password reset failed" });
+  }
+});
+
+
   module.exports = router;
