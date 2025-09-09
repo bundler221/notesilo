@@ -1,57 +1,75 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
+import MDEditor from "@uiw/react-md-editor";
 import axios from "axios";
 
 export default function NoteEditor({ note, token, onSave }) {
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
+  const [title, setTitle] = useState(note?.title || "Untitled");
+  const [content, setContent] = useState(note?.content || "## Example Heading");
 
   useEffect(() => {
     if (note) {
-      setTitle(note.title || "");
-      setContent(note.content || "");
+      setTitle(note.title || "Untitled");
+      setContent(note.content || "## Example Heading");
     }
   }, [note]);
 
   const handleSave = async () => {
     try {
-      const url = note._id
-        ? `${import.meta.env.VITE_API_URL}/api/notes/${note._id}`
-        : `${import.meta.env.VITE_API_URL}/api/notes`;
+      // Save to API if token exists
+      if (token) {
+        const url = note?._id
+          ? `${import.meta.env.VITE_API_URL}/api/notes/${note._id}`
+          : `${import.meta.env.VITE_API_URL}/api/notes`;
+        const method = note?._id ? "put" : "post";
 
-      const method = note._id ? "put" : "post"; // PUT for existing, POST for new
+        const res = await axios({
+          method,
+          url,
+          headers: { Authorization: `Bearer ${token}` },
+          data: { title, content },
+        });
+        console.log("✅ Note saved to API:", res.data);
+        if (onSave) onSave(res.data);
+      }
 
-      const res = await axios({
-        method,
-        url,
-        headers: { Authorization: `Bearer ${token}` },
-        data: { title, content },
-      });
+      // Download file
+      const filename = `${title.replace(/\s+/g, "_") || "note"}.md`;
+      const blob = new Blob([content], { type: "text/markdown" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = filename;
+      link.click();
+      URL.revokeObjectURL(link.href);
 
-      console.log("✅ Note saved:", res.data);
-      onSave(res.data); // update parent notes list
+      console.log(`💾 Saved Markdown as ${filename}`);
     } catch (err) {
       console.error("❌ Failed to save note:", err);
     }
   };
 
   return (
-    <div>
+    <div className="p-2 border rounded bg-white text-black">
+      {/* Title input */}
       <input
         type="text"
         value={title}
+        onChange={(e) => setTitle(e.target.value)}
         placeholder="Title"
         className="border w-full mb-2 p-2 rounded"
-        onChange={(e) => setTitle(e.target.value)}
       />
-      <textarea
+
+      {/* Markdown Editor with built-in preview */}
+      <MDEditor
         value={content}
-        placeholder="Content"
-        className="border w-full h-64 p-2 rounded"
-        onChange={(e) => setContent(e.target.value)}
+        onChange={setContent}
+        height={400}
+        preview="live"   // 👈 this shows editor + preview in one
       />
+
+      {/* Save button */}
       <button
         onClick={handleSave}
-        className="bg-blue-500 hover:bg-blue-600 px-4 py-2 mt-2 text-white rounded"
+        className="mt-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded text-white"
       >
         Save Note
       </button>
