@@ -11,7 +11,8 @@ export default function MindMap({ token }) {
   useEffect(() => {
     const fetchGraph = async () => {
       if (!token) return;
-
+      console.log(token);
+      
       try {
         const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/notes/graph/all`, {
           headers: { Authorization: `Bearer ${token}` },

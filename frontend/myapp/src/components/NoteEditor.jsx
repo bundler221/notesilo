@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import MDEditor from "@uiw/react-md-editor";
 import axios from "axios";
-import toast from "react-hot-toast";
+import NoteActions from "./NoteActions";
 
 
 export default function NoteEditor({ note, token, onSave, canEdit }) {
@@ -70,37 +70,12 @@ export default function NoteEditor({ note, token, onSave, canEdit }) {
     setSuggestions([]);
   };
 
-  // ✅ Save note
-const handleSave = async () => {
-  if (!canEdit) return;
-  try {
-    const url = note?._id
-      ? `${import.meta.env.VITE_API_URL}/api/notes/${note._id}`
-      : `${import.meta.env.VITE_API_URL}/api/notes`;
-    const method = note?._id ? "put" : "post";
-
-    const res = await axios({
-      method,
-      url,
-      headers: { Authorization: `Bearer ${token}` },
-      data: { title, content },
-    });
-
-    // ✅ Ensure saved note carries canWrite flag
-    if (onSave) onSave({ ...res.data, canWrite: true });
-
-    // ✅ Show success toast
-    toast.success("Note saved successfully!");
-  } catch (err) {
-    console.error("❌ Failed to save note:", err);
-    toast.error("Failed to save note.");
-  }
-};
 
 
 
   // ✅ Render references in read-only mode as clickable links
   // ✅ Safe render for references
+// eslint-disable-next-line no-unused-vars
 const renderWithReferences = (text) => {
   if (typeof text !== "string") return text; // skip if not string
 
@@ -154,25 +129,21 @@ const renderWithReferences = (text) => {
             </ul>
           )}
 
-          <button
-            onClick={handleSave}
-            className="mt-3 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded text-white"
-          >
-            Save Note
-          </button>
+          <NoteActions
+  note={{ ...note, title, content }} // pass latest values
+  token={token}
+  canEdit={canEdit}
+  onSave={onSave}
+/>
+
         </>
       ) : (
         <>
           {/* Read-only mode */}
           <h1 className="text-3xl font-bold mb-4 text-center">{title}</h1>
           <div className="prose max-w-none">
-            <MDEditor.Markdown
-  source={content}
-  style={{ whiteSpace: "pre-wrap" }}
-  components={{
-    p: (props) => <p>{renderWithReferences(props.children)}</p>,
-  }}
-/>
+            <MDEditor.Markdown value={content} style={{ whiteSpace: "pre-wrap" }} />
+
 
           </div>
         </>

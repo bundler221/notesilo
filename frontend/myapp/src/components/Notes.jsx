@@ -33,6 +33,8 @@ export default function Notes() {
   }
 }, [token]);
 
+  
+
 
   const fetchNotes = async () => {
     if (!token) return;
@@ -51,16 +53,25 @@ export default function Notes() {
     fetchNotes();
   }, [token]);
 
-  const handleAddNote = () => setSelectedNote({}); // empty note
+  const handleAddNote = () => setSelectedNote({ canWrite: true });
+
 
   const handleNoteSave = (savedNote) => {
-    setNotes((prev) => {
-      const exists = prev.find((n) => n._id === savedNote._id);
-      if (exists) return prev.map((n) => (n._id === savedNote._id ? savedNote : n));
-      return [savedNote, ...prev];
-    });
-    setSelectedNote(savedNote);
-  };
+  if (!savedNote) {
+    // note deleted
+    setNotes((prev) => prev.filter((n) => n._id !== selectedNote._id));
+    setSelectedNote(null);
+    return;
+  }
+
+  setNotes((prev) => {
+    const exists = prev.find((n) => n._id === savedNote._id);
+    if (exists) return prev.map((n) => (n._id === savedNote._id ? savedNote : n));
+    return [savedNote, ...prev];
+  });
+  setSelectedNote(savedNote);
+};
+
 
   const handleLogout = () => {
     console.log("🚪 Logging out...");
@@ -79,6 +90,8 @@ export default function Notes() {
           >
             Add Note
           </button>
+
+          
           <button
             onClick={() => navigate("/graph")}   // ✅ fixed
             className="bg-yellow-500 hover:bg-yellow-600 px-4 py-2 rounded"

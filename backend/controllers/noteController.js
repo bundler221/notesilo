@@ -4,23 +4,32 @@ exports.createNote = async (req, res) => {
   try {
     console.log(req.method);
     const { title, content, tags } = req.body;
+
+    // 🔒 Enforce unique title per user
+    const existing = await Note.findOne({
+      owner: req.user._id,
+      title: { $regex: new RegExp(`^${title.trim()}$`, "i") } // case-insensitive
+    });
+    if (existing) {
+      return res.status(400).json({ msg: "A note with this title already exists" });
+    }
+
     const note = await Note.create({
       title,
       content: content || "",
       tags: tags || [],
       owner: req.user._id,
       sharedWith: [],
-      references: [], // Start empty
+      references: [],
     });
 
-    // Auto-add references from content
     await parseAndAddReferences(note, req.user._id);
-
     res.status(201).json(note);
   } catch (err) {
     res.status(500).json({ msg: "Create failed", error: err.message });
   }
 };
+
 
 exports.getMyNotes = async (req, res) => {
   try {
@@ -72,23 +81,35 @@ async function findNoteByTitle(title) {
 async function parseAndAddReferences(note, userId) {
   console.log('Parsing content for note:', note._id, 'user:', userId);
   const content = note.content;
-  const linkRegex = /\[\[([^\]#]+)(?:#([^\]]*))?\]\]/g;
+
+  // Supports [[Note Title#Heading]] and [[Note Title: Heading]]
+const linkRegex = /\[\[([^\]#:]+)(?:[:#]([^\]]+))?\]\]/g;
+
+
   let match;
   const newRefs = [];
 
   while ((match = linkRegex.exec(content)) !== null) {
-    const targetTitle = match[1].trim();
-    const toHeading = match[2] ? match[2].trim() : "";
+    const targetTitle = match[1].trim();     // e.g. "lmao"
+    const toHeading = match[2]?.trim() || ""; // e.g. "heading1"
+
     console.log('Found link:', targetTitle, 'heading:', toHeading);
+
     if (targetTitle) {
       const targetNote = await findNoteByTitle(targetTitle);
+
       if (targetNote) {
-        console.log('Found target note:', targetNote._id, 'owner:', targetNote.owner);
+        console.log('Found target note:', targetNote._id);
+
+        // ⚡️ Allow cross-user linking if you want
         if (String(targetNote.owner) === String(userId)) {
-          const existingRef = note.references.find(r => String(r.toNote) === String(targetNote._id) && r.toHeading === toHeading);
-          if (!existingRef) {
+          const exists = note.references.some(
+            r => String(r.toNote) === String(targetNote._id) && r.toHeading === toHeading
+          );
+
+          if (!exists) {
             newRefs.push({
-              fromHeading: "",
+              fromHeading: "",     // optional: you could extract from current note’s heading later
               toNote: targetNote._id,
               toHeading,
               type: "link"
@@ -114,6 +135,7 @@ async function parseAndAddReferences(note, userId) {
 
 
 
+
 exports.getNoteById = async (req, res) => {
   try {
     console.log(req.method);
@@ -128,19 +150,35 @@ exports.updateNote = async (req, res) => {
     console.log(req.method);
     const { title, content, tags } = req.body;
     const note = req.note;
-    if (typeof title === "string") note.title = title;
+
+    // 🔒 Prevent renaming to a duplicate
+    if (typeof title === "string" && title.trim() !== note.title.trim()) {
+      const existing = await Note.findOne({
+        owner: req.user._id,
+        title: { $regex: new RegExp(`^${title.trim()}$`, "i") },
+        _id: { $ne: note._id } // exclude current note
+      });
+      if (existing) {
+        return res.status(400).json({ msg: "A note with this title already exists" });
+      }
+      note.title = title;
+    }
+
     if (typeof content === "string") {
       note.content = content;
-      note.references = []; // Clear existing refs
-      await parseAndAddReferences(note, req.user._id); // Parse new refs
+      note.references = [];
+      await parseAndAddReferences(note, req.user._id);
     }
+
     if (Array.isArray(tags)) note.tags = tags;
+
     await note.save();
     res.json(note);
   } catch (err) {
     res.status(500).json({ msg: "Update failed", error: err.message });
   }
 };
+
 
 exports.deleteNote = async (req, res) => {
   try {

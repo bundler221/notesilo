@@ -21,6 +21,7 @@ export default function Login() {
     } else {
       alert(data.msg || "Login failed");
     }
+    
   }
 
   async function handleRegister(e) {
