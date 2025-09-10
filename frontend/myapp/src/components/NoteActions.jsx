@@ -4,23 +4,28 @@ import toast from "react-hot-toast";
 
 export default function NoteActions({ note, token, canEdit, onSave }) {
   const [showShare, setShowShare] = useState(false);
-  const [shareUser, setShareUser] = useState("");
+  const [shareUser, setShareUser] = useState(null);
+  const [typedUser, setTypedUser] = useState("");
   const [accessLevel, setAccessLevel] = useState("read");
-
   const [results, setResults] = useState([]);
 
-const searchUsers = async (q) => {
-  if (!q) return setResults([]);
-  try {
-    const res = await axios.get(
-      `${import.meta.env.VITE_API_URL}/api/users/search?q=${q}`,
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-    setResults(res.data);
-  } catch (err) {
-    console.error("❌ User search failed:", err);
-  }
-};
+  // ✅ Summarization
+  const [summary, setSummary] = useState("");
+  const [showSummary, setShowSummary] = useState(false);
+  const [loadingSummary, setLoadingSummary] = useState(false);
+
+  const searchUsers = async (q) => {
+    if (!q) return setResults([]);
+    try {
+      const res = await axios.get(
+        `${import.meta.env.VITE_API_URL}/api/users/search?q=${q}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setResults(res.data);
+    } catch (err) {
+      console.error("❌ User search failed:", err);
+    }
+  };
 
   // ✅ Save
   const handleSave = async () => {
@@ -67,15 +72,12 @@ const searchUsers = async (q) => {
   // ✅ Share
   const handleShare = async () => {
     if (!note?._id) return;
-
     try {
       await axios.post(
-  `${import.meta.env.VITE_API_URL}/api/notes/${note._id}/share`,
-  { userId: shareUser, accessLevel }, // shareUser should now be a MongoDB _id
-  { headers: { Authorization: `Bearer ${token}` } }
-);
-
-
+        `${import.meta.env.VITE_API_URL}/api/notes/${note._id}/share`,
+        { userId: shareUser._id, accessLevel },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
       toast.success("Note shared!");
       setShowShare(false);
       setShareUser("");
@@ -86,8 +88,28 @@ const searchUsers = async (q) => {
     }
   };
 
+  // ✅ Summarize
+  const handleSummarize = async () => {
+    if (!note?._id) return;
+    setLoadingSummary(true);
+    try {
+      const res = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/notes/${note._id}/summarize`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setSummary(res.data.summary);
+      setShowSummary(true);
+    } catch (err) {
+      console.error("❌ Summarization failed:", err);
+      toast.error("Failed to summarize note");
+    } finally {
+      setLoadingSummary(false);
+    }
+  };
+
   return (
-    <div className="mt-3 flex gap-2">
+    <div className="mt-3 flex gap-2 relative">
       {canEdit && (
         <>
           <button
@@ -112,6 +134,14 @@ const searchUsers = async (q) => {
               >
                 Share
               </button>
+
+              <button
+                onClick={handleSummarize}
+                disabled={loadingSummary}
+                className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded"
+              >
+                {loadingSummary ? "Summarizing..." : "Summarize"}
+              </button>
             </>
           )}
         </>
@@ -119,43 +149,46 @@ const searchUsers = async (q) => {
 
       {/* Floating share panel */}
       {showShare && (
-        <div className="absolute top-10 right-10 bg-white border shadow-lg rounded p-4 z-50">
+        <div className="absolute top-10 right-10 bg-white border shadow-lg rounded p-4 z-50 w-80">
           <h3 className="font-semibold mb-2">Share Note</h3>
           <input
-  type="text"
-  placeholder="Search user by email/username"
-  value={shareUser}
-  onChange={(e) => {
-    setShareUser(e.target.value);
-    searchUsers(e.target.value);
-  }}
-  className="border p-2 w-full mb-2 rounded"
-/>
+            type="text"
+            placeholder="Search user by email/username"
+            value={shareUser ? shareUser.username || shareUser.email : typedUser}
+            onChange={(e) => {
+              setTypedUser(e.target.value);
+              setShareUser(null);
+              searchUsers(e.target.value);
+            }}
+            className="border p-2 w-full mb-2 rounded"
+          />
 
-{results.length > 0 && (
-  <ul className="border rounded bg-white shadow max-h-40 overflow-y-auto">
-    {results.map((u) => (
-      <li
-        key={u._id}
-        className="px-2 py-1 hover:bg-gray-200 cursor-pointer"
-        onClick={() => {
-          setShareUser(u._id); // 👈 store userId, not email
-          setResults([]);
-        }}
-      >
-        {u.username || u.email}
-      </li>
-    ))}
-  </ul>
-)}
+          {results.length > 0 && (
+            <ul className="border rounded bg-white shadow max-h-40 overflow-y-auto">
+              {results.map((u) => (
+                <li
+                  key={u._id}
+                  className="px-2 py-1 hover:bg-gray-200 cursor-pointer"
+                  onClick={() => {
+                    setShareUser(u);
+                    setTypedUser("");
+                    setResults([]);
+                  }}
+                >
+                  {u.username || u.email}
+                </li>
+              ))}
+            </ul>
+          )}
+
           <select
-  value={accessLevel}
-  onChange={(e) => setAccessLevel(e.target.value)}
-  className="border p-2 w-full mb-2 rounded"
->
-  <option value="read">Read</option>
-  <option value="write">Write</option>
-</select>
+            value={accessLevel}
+            onChange={(e) => setAccessLevel(e.target.value)}
+            className="border p-2 w-full mb-2 rounded"
+          >
+            <option value="read">Read</option>
+            <option value="write">Write</option>
+          </select>
 
           <div className="flex justify-end gap-2">
             <button
@@ -170,6 +203,24 @@ const searchUsers = async (q) => {
             >
               Share
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Summary dialog */}
+      {showSummary && (
+        <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded shadow-lg max-w-lg w-full">
+            <h3 className="font-semibold text-lg mb-4">Note Summary</h3>
+            <p className="whitespace-pre-line">{summary}</p>
+            <div className="flex justify-end mt-4">
+              <button
+                onClick={() => setShowSummary(false)}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded"
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}

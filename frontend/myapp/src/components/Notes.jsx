@@ -5,6 +5,8 @@ import NoteEditor from "./NoteEditor";
 import jwtDecode from "jwt-decode";
 import { Navigate } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
+import SharingLog from "./SharingLog";
+
 
 export default function Notes() {
   const navigate = useNavigate(); 
@@ -12,6 +14,8 @@ export default function Notes() {
   const [username, setUsername] = useState("user");
   const [selectedNote, setSelectedNote] = useState(null);
   const token = localStorage.getItem("token");
+  const [showNotesPanel, setShowNotesPanel] = useState(false);
+
 
   // Decode JWT to get username
   useEffect(() => {
@@ -84,27 +88,36 @@ export default function Notes() {
       <header className="flex justify-between items-center p-4 bg-blue-600 text-white">
         <h1 className="text-xl font-bold">Welcome, {username}</h1>
         <div className="flex gap-2">
-          <button
-            onClick={handleAddNote}
-            className="bg-green-500 hover:bg-green-600 px-4 py-2 rounded"
-          >
-            Add Note
-          </button>
+  <button
+    onClick={handleAddNote}
+    className="bg-green-500 hover:bg-green-600 px-4 py-2 rounded"
+  >
+    Add Note
+  </button>
 
-          
-          <button
-            onClick={() => navigate("/graph")}   // ✅ fixed
-            className="bg-yellow-500 hover:bg-yellow-600 px-4 py-2 rounded"
-          >
-            Graph
-          </button>
-          <button
-            onClick={handleLogout}
-            className="bg-red-500 hover:bg-red-600 px-4 py-2 rounded"
-          >
-            Logout
-          </button>
-        </div>
+  <button
+  onClick={() => setShowNotesPanel((prev) => !prev)}
+  className="bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded"
+>
+  {showNotesPanel ? "Hide Notes" : "Show Notes"}
+</button>
+
+
+  <button
+    onClick={() => navigate("/graph")}
+    className="bg-yellow-500 hover:bg-yellow-600 px-4 py-2 rounded"
+  >
+    Graph
+  </button>
+
+  <button
+    onClick={handleLogout}
+    className="bg-red-500 hover:bg-red-600 px-4 py-2 rounded"
+  >
+    Logout
+  </button>
+</div>
+
       </header>
 
       <div className="flex flex-1 overflow-hidden">
@@ -125,6 +138,7 @@ export default function Notes() {
               </div>
             ))
           )}
+            
         </aside>
 
         <section className="flex-1 p-4">
@@ -142,6 +156,7 @@ export default function Notes() {
 </section>
 
       </div>
+      {showNotesPanel && <SharingLog token={token} />}
     </div>
   );
 }

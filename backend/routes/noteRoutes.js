@@ -7,7 +7,9 @@ const {
   deleteNote,
   shareNote,
   addReference,
-  removeReference
+  removeReference,
+  revokeAccess,
+  getNotesWithUsers
 } = require("../controllers/noteController");
 const { protect } = require("../middlewares/authMiddleware");
 const { requireNoteAccess } = require("../middlewares/accessMiddleware");
@@ -23,8 +25,10 @@ router.get("/:id", requireNoteAccess("read"), getNoteById);
 router.put("/:id", requireNoteAccess("write"), updateNote);
 router.delete("/:id", requireNoteAccess("owner"), deleteNote);
 router.post("/:id/share", requireNoteAccess("owner"), shareNote);
-
+router.post("/:id/revoke", requireNoteAccess("owner"), revokeAccess);
 router.post("/:id/references", requireNoteAccess("write"), addReference);
 router.delete("/:id/references/:toNoteId", requireNoteAccess("write"), removeReference);
+
+router.get("/enriched", getNotesWithUsers);
 
 module.exports = router;

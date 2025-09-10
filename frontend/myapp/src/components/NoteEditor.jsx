@@ -142,7 +142,7 @@ const renderWithReferences = (text) => {
           {/* Read-only mode */}
           <h1 className="text-3xl font-bold mb-4 text-center">{title}</h1>
           <div className="prose max-w-none">
-            <MDEditor.Markdown value={content} style={{ whiteSpace: "pre-wrap" }} />
+            <MDEditor.Markdown source={content} />
 
 
           </div>

@@ -1,4 +1,5 @@
 const Note = require("../model/Note");
+const User = require("../model/User");
 
 exports.createNote = async (req, res) => {
   try {
@@ -68,6 +69,22 @@ exports.getMyNotes = async (req, res) => {
     res.json(enrichedNotes);
   } catch (err) {
     res.status(500).json({ msg: "Fetch failed", error: err.message });
+  }
+};
+
+exports.revokeAccess = async (req, res) => {
+  try {
+    const { userId } = req.body;
+    const note = req.note; // ensured by middleware (owner-only)
+
+    note.sharedWith = note.sharedWith.filter(
+      (sw) => String(sw.userId) !== String(userId)
+    );
+
+    await note.save();
+    res.json({ msg: "Access revoked", sharedWith: note.sharedWith });
+  } catch (err) {
+    res.status(500).json({ msg: "Revoke failed", error: err.message });
   }
 };
 
@@ -242,5 +259,36 @@ exports.removeReference = async (req, res) => {
     res.json({ msg: "Reference removed", references: note.references });
   } catch (err) {
     res.status(500).json({ msg: "Remove reference failed", error: err.message });
+  }
+};
+
+
+
+// Get all notes with sharedWith populated with username/email
+exports.getNotesWithUsers = async (req, res) => {
+  try {
+    const notes = await Note.find()
+      .populate("owner", "username email") // owner info
+      .populate("sharedWith.userId", "username email") // sharedWith info
+      .lean(); // plain JS objects
+
+    // Map sharedWith to include username/email directly
+    const enrichedNotes = notes.map(note => ({
+      ...note,
+      sharedWith: note.sharedWith.map(sw => ({
+        userId: sw.userId._id,
+        username: sw.userId.username,
+        email: sw.userId.email,
+        accessLevel: sw.accessLevel,
+      })),
+      ownerId: note.owner._id,
+      ownerUsername: note.owner.username,
+      ownerEmail: note.owner.email
+    }));
+
+    res.json(enrichedNotes);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ msg: "Failed to fetch notes", error: err.message });
   }
 };
