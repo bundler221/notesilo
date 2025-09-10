@@ -8,6 +8,7 @@ import ResetPassword from "./components/ResetPassword";
 import ForgotPassword from "./components/forgotpassword";
 import GraphPage from "./components/GraphPage"; 
 import AddReferenceForm from "./components/AddReferenceForm"; // optional if you want direct page
+import LeftSideFiles from "./components/LeftSideFiles"
 import { Toaster } from "react-hot-toast";
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/graph" element={<GraphPage />} />  {/* ✅ Graph page route */}
+        <Route path="/dashboard" element={<LeftSideFiles/>}/>
       </Routes>
     </BrowserRouter>
   );
