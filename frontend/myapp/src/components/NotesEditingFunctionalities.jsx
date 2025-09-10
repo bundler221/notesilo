@@ -1,21 +1,36 @@
 // NotesEditingFunctionalities.jsx
 import jsPDF from "jspdf";
 
-// Summarize the note content (mock summarization)
-export function summarizeNote(noteContent) {
+// NotesEditingFunctionalities.jsx
+
+// 🔹 Summarize with ChatGPT
+export async function summarizeNoteWithAI(noteContent) {
   if (!noteContent) return "No content to summarize.";
-  return noteContent.split(".").slice(0, 2).join(".") + "...";
+
+  const res = await fetch("http://localhost:5000/api/notes/summarize", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ content: noteContent }),
+  });
+
+  const data = await res.json();
+  return data.summary;
 }
 
-// Prepare questions from note content
-export function prepareQuestions(noteContent) {
+// 🔹 Prepare questions with ChatGPT
+export async function prepareQuestionsWithAI(noteContent) {
   if (!noteContent) return ["No content found to prepare questions."];
-  return [
-    "What is the main idea of this note?",
-    "List 2 important points mentioned.",
-    "How would you explain this concept in simple terms?",
-  ];
+
+  const res = await fetch("http://localhost:5000/api/notes/questions", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ content: noteContent }),
+  });
+
+  const data = await res.json();
+  return data.questions;
 }
+
 
 // Translate note content (mock version)
 export function translateNote(noteContent, language = "hi") {
