@@ -14,8 +14,8 @@ import {
   FiLogOut,
 } from "react-icons/fi";
 import {
-  summarizeNote,
-  prepareQuestions,
+  summarizeNoteWithAI,
+  prepareQuestionsWithAI,
   translateNote,
   exportToPDF,
   renameNote,
@@ -113,17 +113,17 @@ export default function Dashboard() {
   }, []);
 
   // === File Actions ===
-   const handleFileAction = (action) => {
+   const handleFileAction = async (action) => {
   if (!selectedNote) return;
 
-  switch (action) {
+   switch (action) {
     case "Summarize this note": {
-      const summary = summarizeNote(selectedNote.content);
+      const summary = await summarizeNoteWithAI(selectedNote.content);
       alert(summary);
       break;
     }
     case "Prepare questions": {
-      const questions = prepareQuestions(selectedNote.content);
+      const questions = await prepareQuestionsWithAI(selectedNote.content);
       alert(questions.join("\n"));
       break;
     }
