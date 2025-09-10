@@ -13,6 +13,13 @@ import {
   FiInfo,
   FiLogOut,
 } from "react-icons/fi";
+import {
+  summarizeNote,
+  prepareQuestions,
+  translateNote,
+  exportToPDF,
+  renameNote,
+} from "./NotesEditingFunctionalities";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -106,11 +113,46 @@ export default function Dashboard() {
   }, []);
 
   // === File Actions ===
-  const handleFileAction = (action) => {
-    if (!selectedNote) return;
-    alert(`Action: ${action} on ${selectedNote.title || "Untitled Note"}`);
-    setFileMenuOpen(false);
-  };
+   const handleFileAction = (action) => {
+  if (!selectedNote) return;
+
+  switch (action) {
+    case "Summarize this note": {
+      const summary = summarizeNote(selectedNote.content);
+      alert(summary);
+      break;
+    }
+    case "Prepare questions": {
+      const questions = prepareQuestions(selectedNote.content);
+      alert(questions.join("\n"));
+      break;
+    }
+    case "Translate this note": {
+      const translated = translateNote(selectedNote.content, "hi"); // Example Hindi
+      alert(translated);
+      break;
+    }
+    case "Export to PDF": {
+      exportToPDF(selectedNote.title, selectedNote.content);
+      break;
+    }
+    case "Rename": {
+      const newTitle = prompt("Enter new title:", selectedNote.title);
+      if (newTitle) {
+        const updated = renameNote(selectedNote, newTitle);
+        setSelectedNote(updated);
+        setNotes((prev) =>
+          prev.map((n) => (n._id === updated._id ? updated : n))
+        );
+      }
+      break;
+    }
+    default:
+      console.log("Unknown action:", action);
+  }
+
+  setFileMenuOpen(false);
+};
 
   const currentFile = selectedNote?.title || "Untitled Note";
 
@@ -152,17 +194,24 @@ export default function Dashboard() {
                     Prepare questions
                   </li>
                   <li
-                    onClick={() => handleFileAction("Export to PDF")}
-                    className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                  >
-                    Export to PDF
-                  </li>
-                  <li
                     onClick={() => handleFileAction("Translate this note")}
                     className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
                   >
                     Translate this note
                   </li>
+                  <li
+                    onClick={() => handleFileAction("Export to PDF")}
+                    className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                  >
+                    Export to PDF
+                  </li>
+                   <li
+                    onClick={() => handleFileAction("Rename")}
+                    className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                  >
+                    Rename
+                  </li>
+                  
                 </ul>
               </div>
             )}
@@ -238,8 +287,7 @@ export default function Dashboard() {
         </div>
 
         {/* EDITOR */}
-        <section className="flex-1 p-4 overflow-y-auto">
-          <h2 className="text-lg font-semibold mb-2">Editor</h2>
+        <section className="flex-1  overflow-y-auto">
           {selectedNote ? (
             <NoteEditor
               note={selectedNote}
