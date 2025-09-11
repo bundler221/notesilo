@@ -114,6 +114,34 @@ exports.summarizeNote = async (req, res) => {
   }
 };
 
+exports.questions = async (req, res) => {
+  try {
+    const note = req.note;
+    if (!note || !note.content) return res.status(400).json({ error: "No content" });
+
+    const response = await axios.post(
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent",
+      {
+        contents: [{ parts: [{ text: `Give Questions based on this note:\n\n${note.content}` }] }]
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          "X-goog-api-key": process.env.GEMINI_KEY
+        }
+      }
+    );
+
+    // ✅ Extract QUestions properly
+    const questions = response.data?.candidates?.[0]?.content?.parts?.[0]?.text || "No summary returned";
+    //console.log("Extracted Summary:", summary);
+
+    res.json({ questions });
+  } catch (err) {
+    console.error("❌ Summarization error:", err.response?.data || err.message);
+    res.status(500).json({ error: "Failed to summarize note", details: err.message });
+  }
+};
 
 
 
