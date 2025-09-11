@@ -14,7 +14,7 @@ export default function NoteActions({ note, token, canEdit, onSave }) {
   const [showSummary, setShowSummary] = useState(false);
   const [loadingSummary, setLoadingSummary] = useState(false);
 
-   const [loadingQuestions, setLoadingQuestions] = useState(false);
+  const [loadingQuestions, setLoadingQuestions] = useState(false);
   const [questions, setQuestions] = useState("");
   const [showQuestions, setShowQuestions] = useState(false);
 
@@ -93,47 +93,47 @@ export default function NoteActions({ note, token, canEdit, onSave }) {
   };
 
   // ✅ Summarize
-const handleSummarize = async () => {
-  if (!note?._id) return;
-  setLoadingSummary(true);
-  try {
-    const res = await axios.post(
-      `${import.meta.env.VITE_API_URL}/api/notes/${note._id}/summarize`,
-      {},
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
+  const handleSummarize = async () => {
+    if (!note?._id) return;
+    setLoadingSummary(true);
+    try {
+      const res = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/notes/${note._id}/summarize`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
-    setSummary(res.data.summary || "No summary returned");
-    setShowSummary(true);
-  } catch (err) {
-    console.error("❌ Summarization failed:", err);
-    toast.error("Failed to summarize note");
-  } finally {
-    setLoadingSummary(false);
-  }
-};
+      setSummary(res.data.summary || "No summary returned");
+      setShowSummary(true);
+    } catch (err) {
+      console.error("❌ Summarization failed:", err);
+      toast.error("Failed to summarize note");
+    } finally {
+      setLoadingSummary(false);
+    }
+  };
 
-// questions
+  // questions
 
-const handleQuestions = async () => {
-  if (!note?._id) return;
-  setLoadingQuestions(true);
-  try {
-    const res = await axios.post(
-      `${import.meta.env.VITE_API_URL}/api/notes/${note._id}/questions`,
-      {},
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
+  const handleQuestions = async () => {
+    if (!note?._id) return;
+    setLoadingQuestions(true);
+    try {
+      const res = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/notes/${note._id}/questions`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
-    setQuestions(res.data.questions || "No questions returned");
-    setShowQuestions(true);
-  } catch (err) {
-    console.error("❌ Questions fetch failed:", err);
-    toast.error("Failed to generate questions");
-  } finally {
-    setLoadingQuestions(false);
-  }
-};
+      setQuestions(res.data.questions || "No questions returned");
+      setShowQuestions(true);
+    } catch (err) {
+      console.error("❌ Questions fetch failed:", err);
+      toast.error("Failed to generate questions");
+    } finally {
+      setLoadingQuestions(false);
+    }
+  };
 
 
 
@@ -164,21 +164,21 @@ const handleQuestions = async () => {
                 Share
               </button>
 
-              <button
+              {/* <button
                 onClick={handleSummarize}
                 disabled={loadingSummary}
                 className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded"
               >
                 {loadingSummary ? "Summarizing..." : "Summarize"}
-              </button>
+              </button> */}
 
-              <button
-  onClick={handleQuestions}
-  disabled={loadingQuestions}
-  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded"
->
-  {loadingQuestions ? "Generating..." : "Get Questions"}
-</button>
+              {/* <button
+                onClick={handleQuestions}
+                disabled={loadingQuestions}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded"
+              >
+                {loadingQuestions ? "Generating..." : "Get Questions"}
+              </button> */}
 
             </>
           )}
@@ -252,8 +252,8 @@ const handleQuestions = async () => {
             <h3 className="font-semibold text-lg mb-4">Note Summary</h3>
             <p className="whitespace-pre-line">{summary}</p>
             <div className="flex justify-end mt-4">
-              
-              
+
+
               <button
                 onClick={() => setShowSummary(false)}
                 className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded"
@@ -263,25 +263,25 @@ const handleQuestions = async () => {
             </div>
           </div>
         </div>
-        )}
+      )}
 
-        {showQuestions && (
-  <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50 transition-opacity duration-300">
-    <div className="bg-white p-6 rounded shadow-lg max-w-lg w-full max-h-[80vh] overflow-y-auto transform transition-all duration-300 scale-95 animate-fadeIn">
-      <h3 className="font-semibold text-lg mb-4">Generated Questions</h3>
-      <p className="whitespace-pre-line">{questions}</p>
-      
-      <div className="flex justify-end mt-4">
-        <button
-          onClick={() => setShowQuestions(false)}
-          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded"
-        >
-          Close
-        </button>
-      </div>
-    </div>
-  </div>
-)}
+      {showQuestions && (
+        <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50 transition-opacity duration-300">
+          <div className="bg-white p-6 rounded shadow-lg max-w-lg w-full max-h-[80vh] overflow-y-auto transform transition-all duration-300 scale-95 animate-fadeIn">
+            <h3 className="font-semibold text-lg mb-4">Generated Questions</h3>
+            <p className="whitespace-pre-line">{questions}</p>
+
+            <div className="flex justify-end mt-4">
+              <button
+                onClick={() => setShowQuestions(false)}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

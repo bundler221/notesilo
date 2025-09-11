@@ -2,6 +2,7 @@
 import { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import jwtDecode from "jwt-decode";
+import SearchResultModal from "./DraggableModal";
 import { useNavigate } from "react-router-dom";
 import NoteEditor from "./NoteEditor";
 import {
@@ -22,6 +23,7 @@ import {
 } from "./NotesEditingFunctionalities";
 
 
+
 export default function Dashboard() {
   const navigate = useNavigate();
   const [notes, setNotes] = useState([]);
@@ -39,6 +41,11 @@ export default function Dashboard() {
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
 
+  
+  // const [query, setQuery] = useState("");
+  // const [results, setResults] = useState([]);
+  const [showModal, setShowModal] = useState(false);
+
   const handleSearch = async () => {
   if (!query) return;
 
@@ -50,6 +57,8 @@ export default function Dashboard() {
   setLoading(true);
   const data = await aiSearchAPI(selectedNote._id, query, token); // ✅ pass noteId
   setResults(data);
+        setShowModal(true);      // open modal
+
   setLoading(false);
 };
 
@@ -229,29 +238,31 @@ export default function Dashboard() {
               </div>
             )}
           </div>
-
+                {/* Search bar */}
           <div className="relative w-full max-w-md">
-            <input
-              type="text"
-              placeholder="Ask anything..."
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              className="p-2 w-full rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
-            />
-            <button
-              onClick={handleSearch}
-              className="absolute right-2 top-1/2 transform -translate-y-1/2 px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
-            >
-              Search
-            </button>
+           {/* search input + button */}
+      <div className="flex space-x-2">
+        <input
+          type="text"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search notes..."
+          className="px-3 py-2 border rounded"
+        />
+        <button
+          onClick={handleSearch}
+          className="px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-500"
+        >
+          Search
+        </button>
+      </div>
 
-            {loading && <p className="mt-2 text-gray-500">Searching...</p>}
-
-            <ul className="mt-2 border border-gray-300 rounded max-h-48 overflow-y-auto bg-white shadow">
-              {results.map((r, i) => (
-                <li key={i} className="px-2 py-1 hover:bg-gray-100">{r}</li>
-              ))}
-            </ul>
+      {/* Modal */}
+      <SearchResultModal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        results={results}
+      />
           </div>
 
         </div>
@@ -328,7 +339,7 @@ export default function Dashboard() {
         </div>
 
         {/* EDITOR */}
-        <section className="flex-1 overflow-y-auto bg-gray-50 p-4">
+        <section className="flex-1 overflow-y-auto bg-gray-50 ">
           {selectedNote ? (
             <NoteEditor
               note={selectedNote}
@@ -337,7 +348,7 @@ export default function Dashboard() {
               canEdit={selectedNote.canWrite}
             />
           ) : (
-            <p className="text-gray-500">Select a note or add a new one</p>
+            <p className="text-gray-500">Select a note or add a new one #(space) heading</p>
           )}
         </section>
 

@@ -112,7 +112,7 @@ const renderWithReferences = (text) => {
             placeholder="Title"
           /> */}
 
-          <MDEditor value={content} onChange={handleEditorChange} height={400} />
+          <MDEditor value={content} onChange={handleEditorChange} height={1000} />
 
           {/* Suggestion Dropdown */}
           {suggestions.length > 0 && (
