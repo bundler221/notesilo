@@ -114,6 +114,39 @@ exports.summarizeNote = async (req, res) => {
   }
 };
 
+exports.aiSearchAPI = async (req, res) => {
+  try {
+    const note = req.note;
+    if (!note || !note.content) {
+      return res.status(400).json({ error: "No content" });
+    }
+
+    const response = await axios.post(
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent",
+      {
+        contents: [
+          { parts: [{ text: `Query: ${req.body.query}\n\nNote Content:\n${note.content}` }] }
+        ]
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          "X-goog-api-key": process.env.GEMINI_KEY,
+        }
+      }
+    );
+
+    const summary =
+      response.data?.candidates?.[0]?.content?.parts?.[0]?.text ||
+      "No Search returned";
+
+    res.json({ results: [summary] }); // ✅ Always return array
+  } catch (err) {
+    console.error("❌ AI Search error:", err.response?.data || err.message);
+    res.status(500).json({ error: "Failed to run AI search", details: err.message });
+  }
+};
+
 exports.questions = async (req, res) => {
   try {
     const note = req.note;

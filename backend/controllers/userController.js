@@ -31,3 +31,4 @@ exports.getUserById = async (req, res) => {
     res.status(500).json({ msg: "Fetch failed", error: err.message });
   }
 };
+

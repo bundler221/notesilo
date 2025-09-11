@@ -11,7 +11,8 @@ const {
   revokeAccess,
   getNotesWithUsers,
   summarizeNote,
-  questions
+  questions,
+  aiSearchAPI
 } = require("../controllers/noteController");
 const { protect } = require("../middlewares/authMiddleware");
 const { requireNoteAccess } = require("../middlewares/accessMiddleware");
@@ -34,6 +35,7 @@ router.delete("/:id/references/:toNoteId", requireNoteAccess("write"), removeRef
 // ✅ Summarize note
 router.post("/:id/summarize", requireNoteAccess("read"), summarizeNote);
 router.post("/:id/questions", requireNoteAccess("read"), questions);
+router.post("/:id/ai", requireNoteAccess("read"), aiSearchAPI);
 router.get("/enriched", getNotesWithUsers);
 
 module.exports = router;

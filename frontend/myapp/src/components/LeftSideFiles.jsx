@@ -18,6 +18,7 @@ import {
   prepareQuestionsAPI,
   exportToPDF,
   renameNote,
+  aiSearchAPI
 } from "./NotesEditingFunctionalities";
 
 
@@ -34,6 +35,24 @@ export default function Dashboard() {
   const fileMenuRef = useRef(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const handleSearch = async () => {
+  if (!query) return;
+
+  if (!selectedNote?._id) {
+    alert("⚠️ Please select a note first");
+    return;
+  }
+
+  setLoading(true);
+  const data = await aiSearchAPI(selectedNote._id, query, token); // ✅ pass noteId
+  setResults(data);
+  setLoading(false);
+};
+
 
   const searchNotes = async (query) => {
     try {
@@ -172,14 +191,15 @@ export default function Dashboard() {
   const currentFile = selectedNote?.title || "Untitled Note";
 
   return (
-    <div className="relative flex flex-col min-h-screen">
+    <div className="relative flex flex-col min-h-screen bg-gray-50">
       {/* === NAVBAR === */}
-      <div className="flex justify-between items-center bg-gray-100 p-3 shadow-md">
-        {/* LEFT: menu + current file */}
+      <div className="flex items-center justify-between bg-white p-3 shadow-md relative z-10">
+        {/* LEFT: menu + current file + search */}
         <div className="flex items-center space-x-3">
+          {/* Hamburger Menu */}
           <button
             onMouseEnter={() => setLeftOpen(true)}
-            className="p-2 text-2xl bg-gray-200 rounded-md hover:bg-gray-300 transition"
+            className="p-2 text-2xl bg-gray-100 rounded-md hover:bg-gray-200 transition"
           >
             <FiMenu />
           </button>
@@ -196,91 +216,63 @@ export default function Dashboard() {
             {fileMenuOpen && (
               <div className="absolute left-0 mt-2 w-56 bg-white border border-gray-300 rounded-md shadow-lg z-50">
                 <ul className="text-gray-800">
-                  <li
-                    onClick={() => handleFileAction("Summarize this note")}
-                    className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                  >
-                    Summarize this note
-                  </li>
-                  <li
-                    onClick={() => handleFileAction("Prepare questions")}
-                    className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                  >
-                    Prepare questions
-                  </li>
-                  <li
-                    onClick={() => handleFileAction("Translate this note")}
-                    className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                  >
-                    Translate this note
-                  </li>
-                  <li
-                    onClick={() => handleFileAction("Export to PDF")}
-                    className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                  >
-                    Export to PDF
-                  </li>
-                  <li
-                    onClick={() => handleFileAction("Rename")}
-                    className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                  >
-                    Rename
-                  </li>
-
+                  {["Summarize this note", "Prepare questions", "Translate this note", "Export to PDF", "Rename"].map((action) => (
+                    <li
+                      key={action}
+                      onClick={() => handleFileAction(action)}
+                      className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                    >
+                      {action}
+                    </li>
+                  ))}
                 </ul>
               </div>
             )}
           </div>
-        </div>
 
-        {/* CENTER with Search Bar */}
-        <div className="flex items-center space-x-3 flex-1 justify-center">
-          <h1 className="text-xl font-bold text-gray-900 mr-4">NoteSilo</h1>
-          <div className="relative w-64">
+          <div className="relative w-full max-w-md">
             <input
               type="text"
-              placeholder="Search your notes..."
-              value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-                if (e.target.value.length > 2) searchNotes(e.target.value);
-                else setSearchResults([]);
-              }}
-              className="border p-2 w-full rounded"
+              placeholder="Ask anything..."
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              className="p-2 w-full rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
             />
-            {searchResults.length > 0 && (
-              <ul className="absolute bg-white border rounded shadow-lg mt-1 max-h-48 overflow-y-auto w-full z-50">
-                {searchResults.map((n) => (
-                  <li
-                    key={n._id}
-                    className="px-2 py-1 hover:bg-gray-200 cursor-pointer"
-                    onClick={() => {
-                      setSelectedNote(n);
-                      setSearchResults([]);
-                      setSearchQuery("");
-                    }}
-                  >
-                    {n.title || "Untitled Note"}
-                  </li>
-                ))}
-              </ul>
-            )}
+            <button
+              onClick={handleSearch}
+              className="absolute right-2 top-1/2 transform -translate-y-1/2 px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
+            >
+              Search
+            </button>
+
+            {loading && <p className="mt-2 text-gray-500">Searching...</p>}
+
+            <ul className="mt-2 border border-gray-300 rounded max-h-48 overflow-y-auto bg-white shadow">
+              {results.map((r, i) => (
+                <li key={i} className="px-2 py-1 hover:bg-gray-100">{r}</li>
+              ))}
+            </ul>
           </div>
+
         </div>
 
+        {/* CENTER: Project Name */}
+        <div className="absolute left-1/2 transform -translate-x-1/2 text-xl font-bold text-gray-900">
+          NoteSilo
+        </div>
 
         {/* RIGHT */}
         <div className="flex items-center space-x-3">
           <button
             onClick={() => navigate("/graph")}
-            className="flex items-center px-3 py-1 bg-blue-600 hover:bg-blue-500 text-white rounded-md"
+            className="flex items-center px-3 py-1 bg-blue-600 hover:bg-blue-500 text-white rounded-md transition"
           >
             <FiShare2 className="mr-1" /> Graph
           </button>
 
           <button
             onMouseEnter={() => setRightOpen(true)}
-            className="p-2 text-2xl bg-gray-200 rounded-md hover:bg-gray-300 transition"
+            className="p-2 text-2xl bg-gray-100 rounded-md hover:bg-gray-200 transition"
           >
             <FiMoreVertical />
           </button>
@@ -291,21 +283,21 @@ export default function Dashboard() {
       <div className="flex flex-1 overflow-hidden">
         {/* LEFT SIDEBAR */}
         <div
-          className={`fixed top-0 left-0 h-full bg-gray-900 text-white p-4 transition-transform duration-300 ease-in-out
-            ${leftOpen ? "translate-x-0" : "-translate-x-full"} w-64 z-50`}
+          className={`fixed top-0 left-0 h-full bg-gray-900 text-white p-4 transition-transform duration-300 ease-in-out ${leftOpen ? "translate-x-0" : "-translate-x-full"
+            } w-64 z-50`}
         >
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-bold">Your Notes</h2>
             <div className="flex items-center space-x-2">
               <button
                 onClick={handleAddNote}
-                className="px-2 py-1 text-sm bg-green-600 hover:bg-green-500 rounded"
+                className="px-2 py-1 text-sm bg-green-600 hover:bg-green-500 rounded transition"
               >
                 + New
               </button>
               <button
                 onClick={() => setLeftOpen(false)}
-                className="p-1 text-2xl bg-gray-700 hover:bg-gray-600 rounded-md"
+                className="p-1 text-2xl bg-gray-700 hover:bg-gray-600 rounded-md transition"
               >
                 <FiChevronLeft />
               </button>
@@ -314,7 +306,7 @@ export default function Dashboard() {
 
           <ul className="space-y-3">
             {notes.length === 0 ? (
-              <p>No notes found</p>
+              <p className="text-gray-400">No notes found</p>
             ) : (
               notes.map((note) => (
                 <li
@@ -323,7 +315,9 @@ export default function Dashboard() {
                     setSelectedNote(note);
                     setLeftOpen(false);
                   }}
-                  className={`p-2 bg-gray-700 hover:bg-gray-600 rounded cursor-pointer ${selectedNote?._id === note._id ? "bg-gray-500" : ""
+                  className={`p-2 rounded cursor-pointer transition ${selectedNote?._id === note._id
+                    ? "bg-gray-700"
+                    : "hover:bg-gray-700"
                     }`}
                 >
                   {note.title || "Untitled Note"}
@@ -334,7 +328,7 @@ export default function Dashboard() {
         </div>
 
         {/* EDITOR */}
-        <section className="flex-1  overflow-y-auto">
+        <section className="flex-1 overflow-y-auto bg-gray-50 p-4">
           {selectedNote ? (
             <NoteEditor
               note={selectedNote}
@@ -349,13 +343,13 @@ export default function Dashboard() {
 
         {/* RIGHT SIDEBAR */}
         <div
-          className={`fixed top-0 right-0 h-full bg-gray-900 text-white p-4 transition-transform duration-300 ease-in-out
-          ${rightOpen ? "translate-x-0" : "translate-x-full"} w-64 z-50`}
+          className={`fixed top-0 right-0 h-full bg-gray-900 text-white p-4 transition-transform duration-300 ease-in-out ${rightOpen ? "translate-x-0" : "translate-x-full"
+            } w-64 z-50`}
         >
           <div className="flex items-center justify-start mb-4 space-x-2">
             <button
               onClick={() => setRightOpen(false)}
-              className="p-1 text-2xl bg-gray-700 hover:bg-gray-600 rounded-md"
+              className="p-1 text-2xl bg-gray-700 hover:bg-gray-600 rounded-md transition"
             >
               <FiChevronLeft className="rotate-180" />
             </button>
@@ -372,7 +366,7 @@ export default function Dashboard() {
           <ul className="space-y-3">
             <li
               onClick={() => setRightOpen(false)}
-              className="flex items-center p-2 bg-gray-700 hover:bg-gray-600 rounded cursor-pointer"
+              className="flex items-center p-2 bg-gray-700 hover:bg-gray-600 rounded cursor-pointer transition"
             >
               <FiInfo className="mr-2" /> About Us
             </li>
@@ -381,7 +375,7 @@ export default function Dashboard() {
           <div className="absolute bottom-6 left-0 w-full px-4">
             <button
               onClick={handleLogout}
-              className="flex items-center w-full justify-center p-2 bg-red-600 hover:bg-red-500 rounded"
+              className="flex items-center w-full justify-center p-2 bg-red-600 hover:bg-red-500 rounded transition"
             >
               <FiLogOut className="mr-2" /> Logout
             </button>
@@ -390,4 +384,5 @@ export default function Dashboard() {
       </div>
     </div>
   );
+
 }

@@ -27,7 +27,7 @@ export async function prepareQuestionsAPI(noteId, token) {
       { headers: { Authorization: `Bearer ${token}` } }
     );
     console.log(res.data);
-    
+
 
     // Ensure it always returns an array
     return (res.data.questions) ? [res.data.questions] : ["No questions returned"];
@@ -36,6 +36,31 @@ export async function prepareQuestionsAPI(noteId, token) {
     return ["Failed to generate questions"];
   }
 }
+// ✅ AI Search API
+export async function aiSearchAPI(noteId, query, token) {
+  if (!query) return []; 
+
+  try {
+    const res = await axios.post(
+      `${import.meta.env.VITE_API_URL}/api/notes/${noteId}/ai`,
+      { query },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+
+    console.log(res.data);
+
+    return res.data.results
+      ? Array.isArray(res.data.results)
+        ? res.data.results
+        : [res.data.results]
+      : ["No results found"];
+  } catch (err) {
+    console.error("❌ AI Search API failed:", err);
+    return ["Failed to fetch results"];
+  }
+}
+
+
 
 
 
