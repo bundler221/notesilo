@@ -200,56 +200,64 @@ export default function Dashboard() {
   };
 
   const currentFile = selectedNote?.title || "Untitled Note";
-
-  return (
-    <div className="relative flex flex-col min-h-screen bg-gray-50">
-      {/* === NAVBAR === */}
-      <div className="flex items-center justify-between bg-white p-3 shadow-md relative z-10">
-        {/* LEFT: menu + current file + search */}
-        <div className="flex items-center space-x-3">
-          {/* Hamburger Menu */}
-          <button
-            onMouseEnter={() => setLeftOpen(true)}
-            className="p-2 text-2xl bg-gray-100 rounded-md hover:bg-gray-200 transition"
-          >
-            <FiMenu />
-          </button>
-
-          {/* Current File Dropdown */}
-          <div className="relative" ref={fileMenuRef}>
+return (
+  <div className="relative flex flex-col min-h-screen bg-gray-50">
+    {/* === NAVBAR === */}
+    <div className="bg-white p-3 shadow-md relative z-10">
+      <div className="max-w-full mx-auto relative">
+        {/* ROW 1: left (hamburger + note name + inline-lg-search), center(title - lg only), right (graph + 3dots) */}
+        <div className="flex items-center justify-between">
+          {/* LEFT group */}
+          <div className="flex items-center space-x-3 flex-shrink-0">
+            {/* Hamburger */}
             <button
-              onClick={() => setFileMenuOpen((prev) => !prev)}
-              className="font-medium text-gray-800 hover:underline"
+              onClick={() => setLeftOpen(true)}
+              className="p-2 text-2xl bg-gray-100 rounded-md hover:bg-gray-200 transition"
             >
-              {currentFile}
+              <FiMenu />
             </button>
 
-            {fileMenuOpen && (
-              <div className="absolute left-0 mt-2 w-56 bg-white border border-gray-300 rounded-md shadow-lg z-50">
-                <ul className="text-gray-800">
-                  {["Summarize this note", "Prepare questions", "Translate this note", "Export to PDF", "Rename"].map((action) => (
-                    <li
-                      key={action}
-                      onClick={() => handleFileAction(action)}
-                      className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                    >
-                      {action}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </div>
-          {/* Search bar */}
-          <div className="relative w-full max-w-md">
-            {/* search input + button */}
-            <div className="flex space-x-2">
+            {/* Current File */}
+            <div className="relative">
+              <button
+                onClick={() => setFileMenuOpen((prev) => !prev)}
+                className="font-medium text-gray-800 truncate max-w-[160px] sm:max-w-[220px] text-left"
+                title={currentFile}
+              >
+                {currentFile}
+              </button>
+
+              {fileMenuOpen && (
+                <div className="absolute left-0 mt-2 w-56 bg-white border border-gray-300 rounded-md shadow-lg z-50">
+                  <ul className="text-gray-800">
+                    {[
+                      "Summarize this note",
+                      "Prepare questions",
+                      "Translate this note",
+                      "Export to PDF",
+                      "Rename",
+                    ].map((action) => (
+                      <li
+                        key={action}
+                        onClick={() => handleFileAction(action)}
+                        className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                      >
+                        {action}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+
+            {/* Inline SEARCH visible on large screens (keeps search next to notes name on lg) */}
+            <div className="hidden lg:flex items-center ml-4 space-x-2">
               <input
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Ask anything..."
-                className="px-3 py-2  rounded w-250"
+                className="px-3 py-2 border rounded w-64"
               />
               <button
                 onClick={handleSearch}
@@ -258,153 +266,177 @@ export default function Dashboard() {
                 Search
               </button>
             </div>
-
-            {/* Modal */}
-            <SearchResultModal
-              isOpen={showModal}
-              onClose={() => setShowModal(false)}
-              results={results}
-            />
           </div>
 
-        </div>
-
-        {/* CENTER: Project Name */}
-        <div className="absolute left-1/2 transform -translate-x-1/2 text-xl font-bold text-gray-900">
-          NoteSilo
-        </div>
-
-        {/* RIGHT */}
-        <div className="flex items-center space-x-3">
-          <button
-            onClick={() => navigate("/graph")}
-            className="flex items-center px-3 py-1 bg-blue-600 hover:bg-blue-500 text-white rounded-md transition"
-          >
-            <FiShare2 className="mr-1" /> Graph
-          </button>
-
-          <button
-            onMouseEnter={() => setRightOpen(true)}
-            className="p-2 text-2xl bg-gray-100 rounded-md hover:bg-gray-200 transition"
-          >
-            <FiMoreVertical />
-          </button>
-        </div>
-      </div>
-
-      {/* === MAIN === */}
-      <div className="flex flex-1 overflow-hidden">
-        {/* LEFT SIDEBAR */}
-        <div
-          className={`fixed top-0 left-0 h-full bg-gray-900 text-white p-4 transition-transform duration-300 ease-in-out ${leftOpen ? "translate-x-0" : "-translate-x-full"
-            } w-64 z-50`}
-        >
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-bold">Your Notes</h2>
-            <div className="flex items-center space-x-2">
-              <button
-                onClick={handleAddNote}
-                className="px-2 py-1 text-sm bg-green-600 hover:bg-green-500 rounded transition"
-              >
-                + New
-              </button>
-              <button
-                onClick={() => setLeftOpen(false)}
-                className="p-1 text-2xl bg-gray-700 hover:bg-gray-600 rounded-md transition"
-              >
-                <FiChevronLeft />
-              </button>
-            </div>
+          {/* CENTER: project name — absolutely centered on large screens to avoid layout shifting */}
+          <div className="absolute left-1/2 transform -translate-x-1/2 hidden lg:block">
+            <h1 className="text-xl font-bold text-gray-900">NoteSilo</h1>
           </div>
 
-          <ul className="space-y-3">
-            {notes.length === 0 ? (
-              <p className="text-gray-400">No notes found</p>
-            ) : (
-              notes.map((note) => (
-                <li
-                  key={note._id}
-                  onClick={() => {
-                    setSelectedNote(note);
-                    setLeftOpen(false);
-                  }}
-                  className={`p-2 rounded cursor-pointer transition ${selectedNote?._id === note._id
-                    ? "bg-gray-700"
-                    : "hover:bg-gray-700"
-                    }`}
-                >
-                  {note.title || "Untitled Note"}
-                </li>
-              ))
-            )}
-          </ul>
-        </div>
-
-        {/* EDITOR */}
-        <section className="flex-1 overflow-y-auto bg-gray-50 ">
-          {selectedNote ? (
-            <NoteEditor
-              note={selectedNote}
-              token={token}
-              onSave={handleNoteSave}
-              canEdit={selectedNote.canWrite}
-            />
-          ) : (
-            <p className="text-gray-500">Select a note or add a new one #(space) heading</p>
-          )}
-        </section>
-
-        {/* RIGHT SIDEBAR */}
-        <div
-          className={`fixed top-0 right-0 h-full bg-gray-900 text-white p-4 transition-transform duration-300 ease-in-out ${rightOpen ? "translate-x-0" : "translate-x-full"
-            } w-64 z-50`}
-        >
-          <div className="flex items-center justify-start mb-4 space-x-2">
+          {/* RIGHT group */}
+          <div className="flex items-center space-x-3 flex-shrink-0">
             <button
-              onClick={() => setRightOpen(false)}
+              onClick={() => navigate("/graph")}
+              className="flex items-center px-3 py-1 bg-blue-600 hover:bg-blue-500 text-white rounded-md transition text-sm sm:text-base"
+            >
+              <FiShare2 className="mr-1" /> Graph
+            </button>
+
+            <button
+              onClick={() => setRightOpen(true)}
+              className="p-2 text-2xl bg-gray-100 rounded-md hover:bg-gray-200 transition"
+            >
+              <FiMoreVertical />
+            </button>
+          </div>
+        </div>
+
+        {/* ROW 2: Search row for small & medium screens (visible only below lg) */}
+        <div className="mt-3 lg:hidden">
+          <div className="flex items-center space-x-2">
+            <input
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Ask anything..."
+              className="flex-1 px-3 py-2 border rounded"
+            />
+            <button
+              onClick={handleSearch}
+              className="px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-500"
+            >
+              Search
+            </button>
+          </div>
+        </div>
+
+        {/* Search results modal (single instance) */}
+        <SearchResultModal
+          isOpen={showModal}
+          onClose={() => setShowModal(false)}
+          results={results}
+        />
+      </div>
+    </div>
+
+    {/* === MAIN === */}
+    <div className="flex flex-1 overflow-hidden">
+      {/* LEFT SIDEBAR */}
+      <div
+        className={`fixed top-0 left-0 h-full bg-gray-900 text-white p-4 transition-transform duration-300 ease-in-out ${
+          leftOpen ? "translate-x-0" : "-translate-x-full"
+        } w-64 z-50`}
+      >
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-bold">Your Notes</h2>
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={handleAddNote}
+              className="px-2 py-1 text-sm bg-green-600 hover:bg-green-500 rounded transition"
+            >
+              + New
+            </button>
+            <button
+              onClick={() => setLeftOpen(false)}
               className="p-1 text-2xl bg-gray-700 hover:bg-gray-600 rounded-md transition"
             >
-              <FiChevronLeft className="rotate-180" />
-            </button>
-            <h2 className="text-xl font-bold">Profile</h2>
-          </div>
-
-          <div className="flex flex-col items-center space-y-2 mb-6">
-            <div className="w-16 h-16 bg-gray-600 rounded-full flex items-center justify-center text-3xl">
-              <FiUser />
-            </div>
-            <p className="font-semibold">{username}</p>
-          </div>
-
-          <ul className="space-y-3">
-            <li
-              onClick={() => setRightOpen(false)}
-              className="flex items-center p-2 bg-gray-700 hover:bg-gray-600 rounded cursor-pointer transition"
-            >
-              <FiInfo className="mr-2" />
-              <Link to="/user-guide" className="text-gray-100 hover:underline">User Guide</Link>
-            </li>
-
-            <li
-              onClick={() => setRightOpen(false)}
-              className="flex items-center p-2 bg-gray-700 hover:bg-gray-600 rounded cursor-pointer transition"
-            >
-              <FiInfo className="mr-2" />
-              <Link to="/about-us" className="text-gray-100 hover:underline">About Us</Link>
-            </li>
-          </ul>
-
-          <div className="absolute bottom-6 left-0 w-full px-4">
-            <button
-              onClick={handleLogout}
-              className="flex items-center w-full justify-center p-2 bg-red-600 hover:bg-red-500 rounded transition"
-            >
-              <FiLogOut className="mr-2" /> Logout
+              <FiChevronLeft />
             </button>
           </div>
+        </div>
+
+        <ul className="space-y-3">
+          {notes.length === 0 ? (
+            <p className="text-gray-400">No notes found</p>
+          ) : (
+            notes.map((note) => (
+              <li
+                key={note._id}
+                onClick={() => {
+                  setSelectedNote(note);
+                  setLeftOpen(false);
+                }}
+                className={`p-2 rounded cursor-pointer transition ${
+                  selectedNote?._id === note._id ? "bg-gray-700" : "hover:bg-gray-700"
+                }`}
+              >
+                {note.title || "Untitled Note"}
+              </li>
+            ))
+          )}
+        </ul>
+      </div>
+
+      {/* EDITOR */}
+      <section className="flex-1 overflow-y-auto bg-gray-50">
+        {selectedNote ? (
+          <NoteEditor
+            note={selectedNote}
+            token={token}
+            onSave={handleNoteSave}
+            canEdit={selectedNote.canWrite}
+          />
+        ) : (
+          <p className="text-gray-500">Select a note or add a new one #(space) heading</p>
+        )}
+      </section>
+
+      {/* RIGHT SIDEBAR */}
+      <div
+        className={`fixed top-0 right-0 h-full bg-gray-900 text-white p-4 transition-transform duration-300 ease-in-out ${
+          rightOpen ? "translate-x-0" : "translate-x-full"
+        } w-64 z-50`}
+      >
+        <div className="flex items-center justify-start mb-4 space-x-2">
+          <button
+            onClick={() => setRightOpen(false)}
+            className="p-1 text-2xl bg-gray-700 hover:bg-gray-600 rounded-md transition"
+          >
+            <FiChevronLeft className="rotate-180" />
+          </button>
+          <h2 className="text-xl font-bold">Profile</h2>
+        </div>
+
+        <div className="flex flex-col items-center space-y-2 mb-6">
+          <div className="w-16 h-16 bg-gray-600 rounded-full flex items-center justify-center text-3xl">
+            <FiUser />
+          </div>
+          <p className="font-semibold">{username}</p>
+        </div>
+
+        <ul className="space-y-3">
+          <li
+            onClick={() => setRightOpen(false)}
+            className="flex items-center p-2 bg-gray-700 hover:bg-gray-600 rounded cursor-pointer transition"
+          >
+            <FiInfo className="mr-2" />
+            <Link to="/user-guide" className="text-gray-100 hover:underline">
+              User Guide
+            </Link>
+          </li>
+
+          <li
+            onClick={() => setRightOpen(false)}
+            className="flex items-center p-2 bg-gray-700 hover:bg-gray-600 rounded cursor-pointer transition"
+          >
+            <FiInfo className="mr-2" />
+            <Link to="/about-us" className="text-gray-100 hover:underline">
+              About Us
+            </Link>
+          </li>
+        </ul>
+
+        <div className="absolute bottom-6 left-0 w-full px-4">
+          <button
+            onClick={handleLogout}
+            className="flex items-center w-full justify-center p-2 bg-red-600 hover:bg-red-500 rounded transition"
+          >
+            <FiLogOut className="mr-2" /> Logout
+          </button>
         </div>
       </div>
     </div>
-  );
+  </div>
+);
 
 }
