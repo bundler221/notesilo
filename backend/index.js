@@ -1,4 +1,5 @@
 require("dotenv").config();
+
 const express = require("express");
 const cors = require("cors");
 const passport = require("./passport");
@@ -9,6 +10,7 @@ const userRoutes = require("./routes/userRoutes");
 const authRoutes = require("./routes/authRoutes");
 const noteRoutes = require("./routes/noteRoutes");
 const graphRoutes = require("./routes/graphRoutes");
+const uploadRoutes = require("./routes/uploadRoutes");
 
 const app = express();
 connectDB();
@@ -26,7 +28,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/notes", noteRoutes);
 app.use("/api/graph", graphRoutes);
-
+app.use("/api", uploadRoutes);
 
 // Health check
 app.get("/api/health", (_req, res) => res.json({ ok: true }));
