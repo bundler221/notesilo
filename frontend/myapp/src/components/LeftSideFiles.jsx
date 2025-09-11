@@ -14,12 +14,12 @@ import {
   FiLogOut,
 } from "react-icons/fi";
 import {
-  summarizeNoteWithAI,
-  prepareQuestionsWithAI,
-  translateNote,
+  summarizeNoteAPI,
+  prepareQuestionsAPI,
   exportToPDF,
   renameNote,
 } from "./NotesEditingFunctionalities";
+
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -32,6 +32,20 @@ export default function Dashboard() {
   const token = localStorage.getItem("token");
 
   const fileMenuRef = useRef(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+
+  const searchNotes = async (query) => {
+    try {
+      const res = await axios.get(
+        `${import.meta.env.VITE_API_URL}/api/notes/search?q=${query}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setSearchResults(res.data);
+    } catch (err) {
+      console.error("❌ Search failed:", err);
+    }
+  };
 
   // === Get username from JWT or OAuth ===
   useEffect(() => {
@@ -113,46 +127,47 @@ export default function Dashboard() {
   }, []);
 
   // === File Actions ===
-   const handleFileAction = async (action) => {
-  if (!selectedNote) return;
+  const handleFileAction = async (action) => {
+    if (!selectedNote) return;
 
-   switch (action) {
-    case "Summarize this note": {
-      const summary = await summarizeNoteWithAI(selectedNote.content);
-      alert(summary);
-      break;
-    }
-    case "Prepare questions": {
-      const questions = await prepareQuestionsWithAI(selectedNote.content);
-      alert(questions.join("\n"));
-      break;
-    }
-    case "Translate this note": {
-      const translated = translateNote(selectedNote.content, "hi"); // Example Hindi
-      alert(translated);
-      break;
-    }
-    case "Export to PDF": {
-      exportToPDF(selectedNote.title, selectedNote.content);
-      break;
-    }
-    case "Rename": {
-      const newTitle = prompt("Enter new title:", selectedNote.title);
-      if (newTitle) {
-        const updated = renameNote(selectedNote, newTitle);
-        setSelectedNote(updated);
-        setNotes((prev) =>
-          prev.map((n) => (n._id === updated._id ? updated : n))
-        );
+    switch (action) {
+      case "Summarize this note": {
+        const summary = await summarizeNoteAPI(selectedNote._id, token);
+        alert(summary);
+        break;
       }
-      break;
-    }
-    default:
-      console.log("Unknown action:", action);
-  }
+      case "Prepare questions": {
+        const questions = await prepareQuestionsAPI(selectedNote._id, token);
+        alert(questions.join("\n"));
+        break;
+      }
 
-  setFileMenuOpen(false);
-};
+      case "Translate this note": {
+        const translated = translateNote(selectedNote.content, "hi"); // Example Hindi
+        alert(translated);
+        break;
+      }
+      case "Export to PDF": {
+        exportToPDF(selectedNote.title, selectedNote.content);
+        break;
+      }
+      case "Rename": {
+        const newTitle = prompt("Enter new title:", selectedNote.title);
+        if (newTitle) {
+          const updated = renameNote(selectedNote, newTitle);
+          setSelectedNote(updated);
+          setNotes((prev) =>
+            prev.map((n) => (n._id === updated._id ? updated : n))
+          );
+        }
+        break;
+      }
+      default:
+        console.log("Unknown action:", action);
+    }
+
+    setFileMenuOpen(false);
+  };
 
   const currentFile = selectedNote?.title || "Untitled Note";
 
@@ -205,21 +220,54 @@ export default function Dashboard() {
                   >
                     Export to PDF
                   </li>
-                   <li
+                  <li
                     onClick={() => handleFileAction("Rename")}
                     className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
                   >
                     Rename
                   </li>
-                  
+
                 </ul>
               </div>
             )}
           </div>
         </div>
 
-        {/* CENTER */}
-        <h1 className="text-xl font-bold text-gray-900">NoteSilo</h1>
+        {/* CENTER with Search Bar */}
+        <div className="flex items-center space-x-3 flex-1 justify-center">
+          <h1 className="text-xl font-bold text-gray-900 mr-4">NoteSilo</h1>
+          <div className="relative w-64">
+            <input
+              type="text"
+              placeholder="Search your notes..."
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                if (e.target.value.length > 2) searchNotes(e.target.value);
+                else setSearchResults([]);
+              }}
+              className="border p-2 w-full rounded"
+            />
+            {searchResults.length > 0 && (
+              <ul className="absolute bg-white border rounded shadow-lg mt-1 max-h-48 overflow-y-auto w-full z-50">
+                {searchResults.map((n) => (
+                  <li
+                    key={n._id}
+                    className="px-2 py-1 hover:bg-gray-200 cursor-pointer"
+                    onClick={() => {
+                      setSelectedNote(n);
+                      setSearchResults([]);
+                      setSearchQuery("");
+                    }}
+                  >
+                    {n.title || "Untitled Note"}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
+
 
         {/* RIGHT */}
         <div className="flex items-center space-x-3">
@@ -275,9 +323,8 @@ export default function Dashboard() {
                     setSelectedNote(note);
                     setLeftOpen(false);
                   }}
-                  className={`p-2 bg-gray-700 hover:bg-gray-600 rounded cursor-pointer ${
-                    selectedNote?._id === note._id ? "bg-gray-500" : ""
-                  }`}
+                  className={`p-2 bg-gray-700 hover:bg-gray-600 rounded cursor-pointer ${selectedNote?._id === note._id ? "bg-gray-500" : ""
+                    }`}
                 >
                   {note.title || "Untitled Note"}
                 </li>

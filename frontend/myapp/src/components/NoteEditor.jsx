@@ -101,16 +101,16 @@ const renderWithReferences = (text) => {
 
 
   return (
-    <div className="p-2 border rounded bg-white text-black relative">
+    <div className="p-2  rounded bg-white text-black relative">
       {canEdit ? (
         <>
           {/* Editable mode */}
-          <input
+          {/* <input
             className="border w-full mb-2 p-2 rounded"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Title"
-          />
+          /> */}
 
           <MDEditor value={content} onChange={handleEditorChange} height={400} />
 

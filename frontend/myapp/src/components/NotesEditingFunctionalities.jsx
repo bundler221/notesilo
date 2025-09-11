@@ -1,42 +1,28 @@
 // NotesEditingFunctionalities.jsx
 import jsPDF from "jspdf";
 
-// NotesEditingFunctionalities.jsx
+import axios from "axios";
 
-// 🔹 Summarize with ChatGPT
-export async function summarizeNoteWithAI(noteContent) {
-  if (!noteContent) return "No content to summarize.";
-
-  const res = await fetch("http://localhost:5000/api/notes/summarize", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ content: noteContent }),
-  });
-
-  const data = await res.json();
-  return data.summary;
+// ✅ Summarize Note via API
+export async function summarizeNoteAPI(noteId, token) {
+  const res = await axios.post(
+    `${import.meta.env.VITE_API_URL}/api/notes/${noteId}/summarize`,
+    {},
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+  return res.data.summary;
 }
 
-// 🔹 Prepare questions with ChatGPT
-export async function prepareQuestionsWithAI(noteContent) {
-  if (!noteContent) return ["No content found to prepare questions."];
-
-  const res = await fetch("http://localhost:5000/api/notes/questions", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ content: noteContent }),
-  });
-
-  const data = await res.json();
-  return data.questions;
+// ✅ Prepare Questions via API
+export async function prepareQuestionsAPI(noteId, token) {
+  const res = await axios.post(
+    `${import.meta.env.VITE_API_URL}/api/notes/${noteId}/questions`,
+    {},
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+  return res.data.questions;
 }
 
-
-// Translate note content (mock version)
-export function translateNote(noteContent, language = "hi") {
-  if (!noteContent) return "No content to translate.";
-  return `[${language.toUpperCase()} Translation] ${noteContent}`;
-}
 
 // Export note to PDF
 export function exportToPDF(noteTitle, noteContent) {

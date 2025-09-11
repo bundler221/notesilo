@@ -1,6 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
+import { summarizeNoteAPI, prepareQuestionsAPI } from "./NotesEditingFunctionalities";
 
 export default function NoteActions({ note, token, canEdit, onSave }) {
   const [showShare, setShowShare] = useState(false);
@@ -13,6 +14,11 @@ export default function NoteActions({ note, token, canEdit, onSave }) {
   const [summary, setSummary] = useState("");
   const [showSummary, setShowSummary] = useState(false);
   const [loadingSummary, setLoadingSummary] = useState(false);
+
+  // ✅ Questions
+  const [questions, setQuestions] = useState([]);
+  const [showQuestions, setShowQuestions] = useState(false);
+  const [loadingQuestions, setLoadingQuestions] = useState(false);
 
   const searchUsers = async (q) => {
     if (!q) return setResults([]);
@@ -93,18 +99,30 @@ export default function NoteActions({ note, token, canEdit, onSave }) {
     if (!note?._id) return;
     setLoadingSummary(true);
     try {
-      const res = await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/notes/${note._id}/summarize`,
-        {},
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setSummary(res.data.summary);
+      const summary = await summarizeNoteAPI(note._id, token);
+      setSummary(summary);
       setShowSummary(true);
     } catch (err) {
       console.error("❌ Summarization failed:", err);
       toast.error("Failed to summarize note");
     } finally {
       setLoadingSummary(false);
+    }
+  };
+
+  // ✅ Prepare Questions
+  const handleQuestions = async () => {
+    if (!note?._id) return;
+    setLoadingQuestions(true);
+    try {
+      const qs = await prepareQuestionsAPI(note._id, token);
+      setQuestions(qs);
+      setShowQuestions(true);
+    } catch (err) {
+      console.error("❌ Question generation failed:", err);
+      toast.error("Failed to prepare questions");
+    } finally {
+      setLoadingQuestions(false);
     }
   };
 
@@ -141,6 +159,14 @@ export default function NoteActions({ note, token, canEdit, onSave }) {
                 className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded"
               >
                 {loadingSummary ? "Summarizing..." : "Summarize"}
+              </button>
+
+              <button
+                onClick={handleQuestions}
+                disabled={loadingQuestions}
+                className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded"
+              >
+                {loadingQuestions ? "Preparing..." : "Prepare Questions"}
               </button>
             </>
           )}
@@ -216,6 +242,28 @@ export default function NoteActions({ note, token, canEdit, onSave }) {
             <div className="flex justify-end mt-4">
               <button
                 onClick={() => setShowSummary(false)}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Questions dialog */}
+      {showQuestions && (
+        <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded shadow-lg max-w-lg w-full">
+            <h3 className="font-semibold text-lg mb-4">Prepared Questions</h3>
+            <ul className="list-disc list-inside space-y-2">
+              {questions.map((q, idx) => (
+                <li key={idx}>{q}</li>
+              ))}
+            </ul>
+            <div className="flex justify-end mt-4">
+              <button
+                onClick={() => setShowQuestions(false)}
                 className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded"
               >
                 Close
