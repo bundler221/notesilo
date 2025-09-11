@@ -1,7 +1,6 @@
 import { useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
-import { summarizeNoteAPI, prepareQuestionsAPI } from "./NotesEditingFunctionalities";
 
 export default function NoteActions({ note, token, canEdit, onSave }) {
   const [showShare, setShowShare] = useState(false);
@@ -15,10 +14,9 @@ export default function NoteActions({ note, token, canEdit, onSave }) {
   const [showSummary, setShowSummary] = useState(false);
   const [loadingSummary, setLoadingSummary] = useState(false);
 
-  // ✅ Questions
-  const [questions, setQuestions] = useState([]);
+   const [loadingQuestions, setLoadingQuestions] = useState(false);
+  const [questions, setQuestions] = useState("");
   const [showQuestions, setShowQuestions] = useState(false);
-  const [loadingQuestions, setLoadingQuestions] = useState(false);
 
   const searchUsers = async (q) => {
     if (!q) return setResults([]);
@@ -95,36 +93,49 @@ export default function NoteActions({ note, token, canEdit, onSave }) {
   };
 
   // ✅ Summarize
-  const handleSummarize = async () => {
-    if (!note?._id) return;
-    setLoadingSummary(true);
-    try {
-      const summary = await summarizeNoteAPI(note._id, token);
-      setSummary(summary);
-      setShowSummary(true);
-    } catch (err) {
-      console.error("❌ Summarization failed:", err);
-      toast.error("Failed to summarize note");
-    } finally {
-      setLoadingSummary(false);
-    }
-  };
+const handleSummarize = async () => {
+  if (!note?._id) return;
+  setLoadingSummary(true);
+  try {
+    const res = await axios.post(
+      `${import.meta.env.VITE_API_URL}/api/notes/${note._id}/summarize`,
+      {},
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
 
-  // ✅ Prepare Questions
-  const handleQuestions = async () => {
-    if (!note?._id) return;
-    setLoadingQuestions(true);
-    try {
-      const qs = await prepareQuestionsAPI(note._id, token);
-      setQuestions(qs);
-      setShowQuestions(true);
-    } catch (err) {
-      console.error("❌ Question generation failed:", err);
-      toast.error("Failed to prepare questions");
-    } finally {
-      setLoadingQuestions(false);
-    }
-  };
+    setSummary(res.data.summary || "No summary returned");
+    setShowSummary(true);
+  } catch (err) {
+    console.error("❌ Summarization failed:", err);
+    toast.error("Failed to summarize note");
+  } finally {
+    setLoadingSummary(false);
+  }
+};
+
+// questions
+
+const handleQuestions = async () => {
+  if (!note?._id) return;
+  setLoadingQuestions(true);
+  try {
+    const res = await axios.post(
+      `${import.meta.env.VITE_API_URL}/api/notes/${note._id}/questions`,
+      {},
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+
+    setQuestions(res.data.questions || "No questions returned");
+    setShowQuestions(true);
+  } catch (err) {
+    console.error("❌ Questions fetch failed:", err);
+    toast.error("Failed to generate questions");
+  } finally {
+    setLoadingQuestions(false);
+  }
+};
+
+
 
   return (
     <div className="mt-3 flex gap-2 relative">
@@ -162,12 +173,13 @@ export default function NoteActions({ note, token, canEdit, onSave }) {
               </button>
 
               <button
-                onClick={handleQuestions}
-                disabled={loadingQuestions}
-                className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded"
-              >
-                {loadingQuestions ? "Preparing..." : "Prepare Questions"}
-              </button>
+  onClick={handleQuestions}
+  disabled={loadingQuestions}
+  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded"
+>
+  {loadingQuestions ? "Generating..." : "Get Questions"}
+</button>
+
             </>
           )}
         </>
@@ -240,6 +252,8 @@ export default function NoteActions({ note, token, canEdit, onSave }) {
             <h3 className="font-semibold text-lg mb-4">Note Summary</h3>
             <p className="whitespace-pre-line">{summary}</p>
             <div className="flex justify-end mt-4">
+              
+              
               <button
                 onClick={() => setShowSummary(false)}
                 className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded"
@@ -249,29 +263,26 @@ export default function NoteActions({ note, token, canEdit, onSave }) {
             </div>
           </div>
         </div>
-      )}
+        )}
 
-      {/* Questions dialog */}
-      {showQuestions && (
-        <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded shadow-lg max-w-lg w-full">
-            <h3 className="font-semibold text-lg mb-4">Prepared Questions</h3>
-            <ul className="list-disc list-inside space-y-2">
-              {questions.map((q, idx) => (
-                <li key={idx}>{q}</li>
-              ))}
-            </ul>
-            <div className="flex justify-end mt-4">
-              <button
-                onClick={() => setShowQuestions(false)}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+        {showQuestions && (
+  <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50 transition-opacity duration-300">
+    <div className="bg-white p-6 rounded shadow-lg max-w-lg w-full max-h-[80vh] overflow-y-auto transform transition-all duration-300 scale-95 animate-fadeIn">
+      <h3 className="font-semibold text-lg mb-4">Generated Questions</h3>
+      <p className="whitespace-pre-line">{questions}</p>
+      
+      <div className="flex justify-end mt-4">
+        <button
+          onClick={() => setShowQuestions(false)}
+          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded"
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
     </div>
   );
 }
