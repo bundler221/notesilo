@@ -137,8 +137,8 @@ export default function Dashboard() {
         break;
       }
       case "Prepare questions": {
-        const questions = await prepareQuestionsAPI(selectedNote._id, token);
-        alert(questions.join("\n"));
+        const questions = await prepareQuestionsAPI(selectedNote._id, token)
+        alert(questions);
         break;
       }
 

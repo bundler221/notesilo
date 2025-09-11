@@ -17,7 +17,7 @@ export default function Login() {
     const data = await login(email, password);
     if (data.token) {
       localStorage.setItem("token", data.token);
-      navigate("/notes");
+      navigate("/dashboard");
     } else {
       alert(data.msg || "Login failed");
     }
@@ -35,7 +35,7 @@ export default function Login() {
     }
     if (data.token) {
       localStorage.setItem("token", data.token);
-      navigate("/notes");
+      navigate("/dashboard");
     } else {
       alert(data.msg || "Register failed");
     } 

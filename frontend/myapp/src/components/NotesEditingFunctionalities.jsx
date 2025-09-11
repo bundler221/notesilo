@@ -3,6 +3,8 @@ import jsPDF from "jspdf";
 
 import axios from "axios";
 
+
+
 // ✅ Summarize Note via API
 export async function summarizeNoteAPI(noteId, token) {
   const res = await axios.post(
@@ -14,14 +16,27 @@ export async function summarizeNoteAPI(noteId, token) {
 }
 
 // ✅ Prepare Questions via API
+// ✅ Prepare Questions via API
 export async function prepareQuestionsAPI(noteId, token) {
-  const res = await axios.post(
-    `${import.meta.env.VITE_API_URL}/api/notes/${noteId}/questions`,
-    {},
-    { headers: { Authorization: `Bearer ${token}` } }
-  );
-  return res.data.questions;
+  if (!noteId) return []; // safety check
+
+  try {
+    const res = await axios.post(
+      `${import.meta.env.VITE_API_URL}/api/notes/${noteId}/questions`,
+      {},
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    console.log(res.data);
+    
+
+    // Ensure it always returns an array
+    return (res.data.questions) ? [res.data.questions] : ["No questions returned"];
+  } catch (err) {
+    console.error("❌ Questions API failed:", err);
+    return ["Failed to generate questions"];
+  }
 }
+
 
 
 // Export note to PDF

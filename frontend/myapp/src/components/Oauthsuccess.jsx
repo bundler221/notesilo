@@ -13,7 +13,7 @@ export default function OauthSuccess() {
     if (username) localStorage.setItem("username", username);
     console.log(token);
     
-    navigate("/notes"); // redirect to notes page
+    navigate("/dashboard"); // redirect to notes page
   }, [navigate]);
 
   return <p>Logging in...</p>;
