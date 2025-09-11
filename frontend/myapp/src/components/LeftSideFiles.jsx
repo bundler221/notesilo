@@ -246,8 +246,8 @@ export default function Dashboard() {
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search notes..."
-          className="px-3 py-2 border rounded"
+          placeholder="Ask anything..."
+          className="px-3 py-2  rounded w-250"
         />
         <button
           onClick={handleSearch}
