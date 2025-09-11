@@ -7,7 +7,7 @@ const axios = require("axios");
 
 exports.createNote = async (req, res) => {
   try {
-    console.log(req.method);
+    console.log(req.url, req.method);
     const { title, content, tags } = req.body;
 
     // 🔒 Enforce unique title per user
@@ -233,7 +233,7 @@ const linkRegex = /\[\[([^\]#:]+)(?:[:#]([^\]]+))?\]\]/g;
 
 exports.getNoteById = async (req, res) => {
   try {
-    console.log(req.method);
+    console.log(req.url, req.method);
     res.json(req.note); // set by access middleware
   } catch (err) {
     res.status(500).json({ msg: "Fetch failed", error: err.message });
@@ -242,7 +242,7 @@ exports.getNoteById = async (req, res) => {
 
 exports.updateNote = async (req, res) => {
   try {
-    console.log(req.method);
+    console.log(req.url, req.method);
     const { title, content, tags } = req.body;
     const note = req.note;
 
@@ -277,7 +277,7 @@ exports.updateNote = async (req, res) => {
 
 exports.deleteNote = async (req, res) => {
   try {
-    console.log(req.method);
+    console.log(req.url, req.method);
     await req.note.deleteOne();
     res.json({ msg: "Note deleted" });
   } catch (err) {
@@ -287,7 +287,7 @@ exports.deleteNote = async (req, res) => {
 
 exports.shareNote = async (req, res) => {
   try {
-    console.log(req.method);
+    console.log(req.url, req.method);
     const { userId, accessLevel } = req.body; // accessLevel: read | write | comment
     const note = req.note; // owner-only ensured by middleware
 
@@ -308,7 +308,7 @@ exports.shareNote = async (req, res) => {
 
 exports.addReference = async (req, res) => {
   try {
-    console.log(req.method);
+    console.log(req.url, req.method);
     const { toNoteId, fromHeading = "", toHeading = "" } = req.body;
     const note = req.note;
     const targetNote = await Note.findById(toNoteId);
@@ -328,7 +328,7 @@ exports.addReference = async (req, res) => {
 
 exports.removeReference = async (req, res) => {
   try {
-    console.log(req.method);
+    console.log(req.url, req.method);
     const { toNoteId } = req.params;
     const note = req.note;
 
