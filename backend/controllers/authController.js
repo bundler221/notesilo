@@ -15,7 +15,7 @@ function signToken(user) {
 // Register with email/password
 exports.register = async (req, res) => {
   try {
-    console.log(req.method);
+    console.log(req.url, req.method);
     
     const { username, email, password } = req.body;
     if (!email || !password) return res.status(400).json({ msg: "Email & password required" });
@@ -40,7 +40,7 @@ exports.register = async (req, res) => {
 // Login with email/password
 exports.login = async (req, res) => {
   try {
-    console.log(req.method);
+    console.log(req.url, req.method);
     const { email, password } = req.body;
     const user = await User.findOne({ email: (email || "").toLowerCase() });
     if (!user) return res.status(400).json({ msg: "Invalid credentials" });
@@ -61,7 +61,7 @@ exports.login = async (req, res) => {
 
 // Current user
 exports.me = async (req, res) => {
-  console.log(req.method);
+  console.log(req.url, req.method);
   res.json({ user: req.user });
 };
 
@@ -71,7 +71,7 @@ exports.me = async (req, res) => {
 
 exports.oauthSuccessRedirect = (req, res) => {
   try {
-    console.log(req.method);
+    console.log(req.url, req.method);
     const user = req.user;
     // robust fallback for username
     const username = (user && (user.username || user.displayName || user.email)) || "user";
@@ -109,7 +109,7 @@ exports.oauthSuccessRedirect = (req, res) => {
 // Update user details (username, etc.)
 exports.updateProfile = async (req, res) => {
   try {
-    console.log(req.method);
+    console.log(req.url, req.method);
     const { username } = req.body;
     const user = await User.findByIdAndUpdate(
       req.user.id,
@@ -125,7 +125,7 @@ exports.updateProfile = async (req, res) => {
 // Update password (only if email/password user)
 exports.updatePassword = async (req, res) => {
   try {
-    console.log(req.method);
+    console.log(req.url, req.method);
     const { oldPassword, newPassword } = req.body;
     const user = await User.findById(req.user.id);
 
@@ -149,7 +149,7 @@ exports.updatePassword = async (req, res) => {
 // Delete account
 exports.deleteAccount = async (req, res) => {
   try {
-    console.log(req.method);
+    console.log(req.url, req.method);
     await User.findByIdAndDelete(req.user.id);
     res.json({ msg: "Account deleted" });
   } catch (err) {
