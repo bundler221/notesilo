@@ -3,8 +3,10 @@ import { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import jwtDecode from "jwt-decode";
 import SearchResultModal from "./DraggableModal";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import NoteEditor from "./NoteEditor";
+import UserGuide from './UserGuide'
+import AboutUs from "./AboutUs";
 import {
   FiMenu,
   FiChevronLeft,
@@ -41,26 +43,26 @@ export default function Dashboard() {
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  
+
   // const [query, setQuery] = useState("");
   // const [results, setResults] = useState([]);
   const [showModal, setShowModal] = useState(false);
 
   const handleSearch = async () => {
-  if (!query) return;
+    if (!query) return;
 
-  if (!selectedNote?._id) {
-    alert("⚠️ Please select a note first");
-    return;
-  }
+    if (!selectedNote?._id) {
+      alert("⚠️ Please select a note first");
+      return;
+    }
 
-  setLoading(true);
-  const data = await aiSearchAPI(selectedNote._id, query, token); // ✅ pass noteId
-  setResults(data);
-        setShowModal(true);      // open modal
+    setLoading(true);
+    const data = await aiSearchAPI(selectedNote._id, query, token); // ✅ pass noteId
+    setResults(data);
+    setShowModal(true);      // open modal
 
-  setLoading(false);
-};
+    setLoading(false);
+  };
 
 
   const searchNotes = async (query) => {
@@ -238,31 +240,31 @@ export default function Dashboard() {
               </div>
             )}
           </div>
-                {/* Search bar */}
+          {/* Search bar */}
           <div className="relative w-full max-w-md">
-           {/* search input + button */}
-      <div className="flex space-x-2">
-        <input
-          type="text"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Ask anything..."
-          className="px-3 py-2  rounded w-250"
-        />
-        <button
-          onClick={handleSearch}
-          className="px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-500"
-        >
-          Search
-        </button>
-      </div>
+            {/* search input + button */}
+            <div className="flex space-x-2">
+              <input
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Ask anything..."
+                className="px-3 py-2  rounded w-250"
+              />
+              <button
+                onClick={handleSearch}
+                className="px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-500"
+              >
+                Search
+              </button>
+            </div>
 
-      {/* Modal */}
-      <SearchResultModal
-        isOpen={showModal}
-        onClose={() => setShowModal(false)}
-        results={results}
-      />
+            {/* Modal */}
+            <SearchResultModal
+              isOpen={showModal}
+              onClose={() => setShowModal(false)}
+              results={results}
+            />
           </div>
 
         </div>
@@ -379,7 +381,16 @@ export default function Dashboard() {
               onClick={() => setRightOpen(false)}
               className="flex items-center p-2 bg-gray-700 hover:bg-gray-600 rounded cursor-pointer transition"
             >
-              <FiInfo className="mr-2" /> About Us
+              <FiInfo className="mr-2" />
+              <Link to="/user-guide" className="text-gray-100 hover:underline">User Guide</Link>
+            </li>
+
+            <li
+              onClick={() => setRightOpen(false)}
+              className="flex items-center p-2 bg-gray-700 hover:bg-gray-600 rounded cursor-pointer transition"
+            >
+              <FiInfo className="mr-2" />
+              <Link to="/about-us" className="text-gray-100 hover:underline">About Us</Link>
             </li>
           </ul>
 

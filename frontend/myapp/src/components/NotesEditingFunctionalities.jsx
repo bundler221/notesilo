@@ -1,5 +1,6 @@
 // NotesEditingFunctionalities.jsx
 import jsPDF from "jspdf";
+import { marked } from "marked";
 
 import axios from "axios";
 
@@ -67,9 +68,21 @@ export async function aiSearchAPI(noteId, query, token) {
 // Export note to PDF
 export function exportToPDF(noteTitle, noteContent) {
   const doc = new jsPDF();
-  doc.text(noteTitle || "Untitled Note", 10, 10);
-  doc.text(noteContent || "No content", 10, 20);
-  doc.save(`${noteTitle || "note"}.pdf`);
+
+  const htmlContent = `
+    <h1>${noteTitle || "Untitled Note"}</h1>
+    ${marked(noteContent || "No content")}
+  `;
+
+  doc.html(htmlContent, {
+    callback: function (doc) {
+      doc.save(`${noteTitle || "note"}.pdf`);
+    },
+    x: 10,
+    y: 10,
+    width: 180,
+    windowWidth: 800,
+  });
 }
 
 // Rename note
