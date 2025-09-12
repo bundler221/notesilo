@@ -1,16 +1,24 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import MDEditor from "@uiw/react-md-editor";
 import axios from "axios";
 import NoteActions from "./NoteActions";
-
 
 export default function NoteEditor({ note, token, onSave, canEdit }) {
   const [title, setTitle] = useState(note?.title || "Untitled");
   const [content, setContent] = useState(note?.content || "");
   const [notes, setNotes] = useState([]);
   const [suggestions, setSuggestions] = useState([]);
-  // eslint-disable-next-line no-unused-vars
-  const [query, setQuery] = useState("");
+  const [, setQuery] = useState("");
+  const editorRef = useRef(null);
+  const [cursorPos, setCursorPos] = useState(0);
+
+  // ✅ Auto-resize textarea
+  useEffect(() => {
+    const textarea = editorRef.current?.querySelector("textarea");
+    if (!textarea) return;
+    textarea.style.height = "auto";
+    textarea.style.height = textarea.scrollHeight + "px";
+  }, [content]);
 
   // ✅ Load note when prop changes
   useEffect(() => {
@@ -43,12 +51,20 @@ export default function NoteEditor({ note, token, onSave, canEdit }) {
     return matches;
   };
 
-  // ✅ Detect [[query while typing
-  const handleEditorChange = (val) => {
+  // ✅ Detect [[query near cursor
+  const handleEditorChange = (val = "") => {
     setContent(val);
-    const match = val?.match(/\[\[([^\]]*)$/); // text after [[
+
+    const textarea = editorRef.current?.querySelector("textarea");
+    if (!textarea) return;
+
+    setCursorPos(textarea.selectionStart);
+
+    const beforeCursor = val.slice(0, textarea.selectionStart);
+    const match = beforeCursor.match(/\[\[([^\]]*)$/);
+
     if (match) {
-      const q = match[1].toLowerCase();
+      const q = match[1].trim().toLowerCase();
       setQuery(q);
 
       const allHeadings = notes.flatMap((n) => extractHeadings(n));
@@ -57,66 +73,63 @@ export default function NoteEditor({ note, token, onSave, canEdit }) {
           h.text.toLowerCase().includes(q) ||
           h.noteTitle.toLowerCase().includes(q)
       );
-      setSuggestions(filtered.slice(0, 5)); // show top 5
+
+      setSuggestions(filtered.slice(0, 5));
     } else {
       setSuggestions([]);
     }
   };
 
   // ✅ Insert selected reference
-  const insertReference = (ref) => {
-    const reference = `[[${ref.noteTitle}: ${ref.text}]]`;
-    setContent((prev) => prev.replace(/\[\[[^\]]*$/, reference));
-    setSuggestions([]);
+  const insertReference = (s) => {
+    const refText = `[[${s.noteTitle}: ${s.text}]]`;
+
+    const before = content.slice(0, cursorPos);
+    const match = before.match(/\[\[([^\]]*)$/);
+
+    if (match) {
+      const start = before.lastIndexOf("[[");
+      const newContent =
+        content.slice(0, start) + refText + content.slice(cursorPos);
+
+      setContent(newContent);
+      setSuggestions([]);
+
+      setCursorPos(start + refText.length);
+    }
   };
 
+  // ✅ Render references in read-only mode
+  const renderWithReferences = (text) => {
+    if (typeof text !== "string") return text;
+    const refRegex = /\[\[(.+?): (.+?)\]\]/g;
 
-
-
-  // ✅ Render references in read-only mode as clickable links
-  // ✅ Safe render for references
-// eslint-disable-next-line no-unused-vars
-const renderWithReferences = (text) => {
-  if (typeof text !== "string") return text; // skip if not string
-
-  const refRegex = /\[\[(.+?): (.+?)\]\]/g;
-  return text.split(refRegex).map((part, idx, arr) => {
-    if (idx % 3 === 1) {
-      const noteTitle = arr[idx];
-      const heading = arr[idx + 1];
-      return (
-        <a
-          key={idx}
-          href={`#${noteTitle}-${heading}`}
-          className="text-blue-600 underline"
-        >
-          {noteTitle}: {heading}
-        </a>
-      );
-    }
-    if (idx % 3 === 2) return null;
-    return <span key={idx}>{part}</span>;
-  });
-};
-
+    return text.replace(refRegex, (match, noteTitle, heading) => {
+      return `<a href="#${noteTitle}-${heading}" class="text-blue-600 underline">${noteTitle}: ${heading}</a>`;
+    });
+  };
 
   return (
-    <div className="p-2  rounded bg-white text-black relative">
+    <div className="p-2 rounded bg-white text-black relative" ref={editorRef}>
       {canEdit ? (
         <>
-          {/* Editable mode */}
-          {/* <input
-            className="border w-full mb-2 p-2 rounded"
+          {/* ✅ Editable Title */}
+          <input
+            type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="Title"
-          /> */}
+            className="w-full text-2xl font-bold mb-3 border-b border-gray-300 outline-none focus:border-blue-500"
+          />
 
-          <MDEditor value={content} onChange={handleEditorChange} height={1000} />
+          <MDEditor
+            value={content}
+            onChange={handleEditorChange}
+            height={400}
+          />
 
-          {/* Suggestion Dropdown */}
+          {/* Floating Suggestion Dropdown */}
           {suggestions.length > 0 && (
-            <ul className="absolute bg-white border rounded shadow p-2 mt-1 max-h-40 overflow-y-auto z-10">
+            <ul className="absolute left-4 bottom-20 bg-white border rounded shadow p-2 max-h-40 overflow-y-auto z-10 w-80">
               {suggestions.map((s, i) => (
                 <li
                   key={i}
@@ -130,21 +143,20 @@ const renderWithReferences = (text) => {
           )}
 
           <NoteActions
-  note={{ ...note, title, content }} // pass latest values
-  token={token}
-  canEdit={canEdit}
-  onSave={onSave}
-/>
-
+            note={{ ...note, title, content }}
+            token={token}
+            canEdit={canEdit}
+            onSave={onSave}
+          />
         </>
       ) : (
         <>
-          {/* Read-only mode */}
           <h1 className="text-3xl font-bold mb-4 text-center">{title}</h1>
           <div className="prose max-w-none">
-            <MDEditor.Markdown source={content} />
-
-
+            <MDEditor.Markdown
+              source={renderWithReferences(content)}
+              style={{ whiteSpace: "pre-wrap" }}
+            />
           </div>
         </>
       )}
