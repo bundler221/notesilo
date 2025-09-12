@@ -254,14 +254,14 @@ export default function Dashboard() {
               <div className="relative">
                 <button
                   onClick={() => setFileMenuOpen((prev) => !prev)}
-                  className="font-medium text-gray-800 hover:underline cursor-pointer truncate max-w-[160px] sm:max-w-[220px] text-left"
+                  className="font-bold text-gray-800 hover:underline cursor-pointer truncate max-w-[160px] sm:max-w-[220px] text-left"
                   title={currentFile}
                 >
                   {currentFile}
                 </button>
 
                 {fileMenuOpen && (
-                  <div className="absolute left-0 mt-2 w-56 bg-gray-900 text-white border border-gray-300 rounded-md shadow-lg z-50">
+                  <div className="absolute left-0 mt-2 w-56 bg-gray-800 text-white border border-gray-300 rounded-md shadow-lg z-50">
                     <ul className="">
                       {[
                         "Summarize this note",
@@ -320,7 +320,7 @@ export default function Dashboard() {
 
             {/* CENTER: project name — absolutely centered on large screens to avoid layout shifting */}
             <div className="absolute left-1/2 transform -translate-x-1/2 hidden lg:block">
-              <h1 className="text-xl font-bold text-gray-900">NoteSilo</h1>
+              <h1 className="text-3xl font-bold text-gray-900"><span className=" text-yellow-600">N</span>oteSilo</h1>
             </div>
 
             {/* RIGHT group */}
@@ -426,8 +426,32 @@ export default function Dashboard() {
               onSave={handleNoteSave}
               canEdit={selectedNote.canWrite}
             />
-          ) : (
-            <p className="text-gray-500">Select a note or add a new one #(space) heading</p>
+          ) : (<>
+            <div className="text-center  mt-8">
+              <h2 className="text-gray-500 text-lg md:text-xl font-medium">
+                Select a note or add a new one
+              </h2>
+
+              <p className="text-gray-400 mt-2 text-sm md:text-base">
+                💡 Tip: Click{" "}
+                <button
+                  onClick={handleAddNote}
+                  className="px-2 py-1 text-sm bg-green-600 hover:bg-green-500 rounded transition text-white cursor-pointer"
+                >
+                  + New
+                </button>{" "}
+                to create your first note and start writing!
+              </p>
+
+              <div className="mt-4 text-gray-400 text-sm md:text-base space-y-1">
+                <p> Use <span className="font-mono">#</span> for <span className="font-semibold">Heading 1</span></p>
+                <p> Use <span className="font-mono">##</span> for <span className="font-semibold">Heading 2</span></p>
+                <p> Use <span className="font-mono">-</span> or <span className="font-mono">*</span> for bullet points</p>
+                <p>✨ You can also style text with <span className="font-mono">**bold**</span> or <span className="font-mono">*italic*</span></p>
+              </div>
+            </div>
+
+          </>
           )}
         </section>
 
