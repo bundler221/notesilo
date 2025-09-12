@@ -27,7 +27,8 @@ export async function prepareQuestionsAPI(noteId, token) {
       {},
       { headers: { Authorization: `Bearer ${token}` } }
     );
-    console.log(res.data);
+    const questions = res.data;
+    console.log(questions);
 
 
     // Ensure it always returns an array
@@ -39,7 +40,7 @@ export async function prepareQuestionsAPI(noteId, token) {
 }
 // ✅ AI Search API
 export async function aiSearchAPI(noteId, query, token) {
-  if (!query) return []; 
+  if (!query) return [];
 
   try {
     const res = await axios.post(

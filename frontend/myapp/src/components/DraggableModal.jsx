@@ -3,7 +3,7 @@ import MDEditor from "@uiw/react-md-editor";
 import { useState, useRef, useEffect } from "react";
 import { FiX, FiMinus, FiMaximize2, FiCopy, FiCheck } from "react-icons/fi";
 
-export default function DraggableModal({ isOpen, onClose, results }) {
+export default function DraggableModal({ isOpen, onClose, results, title }) {
   const [minimized, setMinimized] = useState(false);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [dragging, setDragging] = useState(false);
@@ -66,10 +66,10 @@ export default function DraggableModal({ isOpen, onClose, results }) {
   return (
     <div className="fixed inset-0 pointer-events-none z-50">
       <div
-        className={`bg-white/90 rounded-lg shadow-2xl border border-gray-200 transition-all
+        className={`bg-white/90 rounded-lg shadow-xl border border-gray-800 transition-all
           ${minimized
             ? "w-72 h-10 flex items-center justify-between px-4 cursor-pointer fixed top-4 right-40"
-            : "w-[600px] max-h-[400px] p-6 overflow-y-auto absolute"
+            : "w-[700px] max-h-[500px] p-2 overflow-y-auto absolute"
           }`}
         style={{
           transform: minimized
@@ -82,11 +82,11 @@ export default function DraggableModal({ isOpen, onClose, results }) {
         <div
           className={`flex justify-between items-center border-b pb-2 ${
             minimized ? "border-0 w-full h-full" : ""
-          } cursor-move bg-gray-100 px-2 py-1 rounded-t-lg`}
+          } cursor-move bg-gray-200 px-2 py-1 rounded-t-lg`}
           onMouseDown={handleMouseDown}
         >
           <h2 className="text-sm font-bold truncate select-none">
-            {minimized ? "🔍 Results (Minimized)" : "🔍 Results"}
+            {minimized ? `🔍 ${title} (Minimized)` : `🔍 ${title}`}
           </h2>
           <div className="flex space-x-2 items-center">
             {!minimized && (
