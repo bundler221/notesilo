@@ -1,6 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
+import DraggableModal from "./DraggableModal";
 
 export default function NoteActions({ note, token, canEdit, onSave }) {
   const [showShare, setShowShare] = useState(false);
@@ -9,14 +10,13 @@ export default function NoteActions({ note, token, canEdit, onSave }) {
   const [accessLevel, setAccessLevel] = useState("read");
   const [results, setResults] = useState([]);
 
-  // ✅ Summarization
+  // ✅ Summarization & Questions
   const [summary, setSummary] = useState("");
-  const [showSummary, setShowSummary] = useState(false);
-  const [loadingSummary, setLoadingSummary] = useState(false);
-
-  const [loadingQuestions, setLoadingQuestions] = useState(false);
   const [questions, setQuestions] = useState("");
+  const [showSummary, setShowSummary] = useState(false);
   const [showQuestions, setShowQuestions] = useState(false);
+  const [loadingSummary, setLoadingSummary] = useState(false);
+  const [loadingQuestions, setLoadingQuestions] = useState(false);
 
   const searchUsers = async (q) => {
     if (!q) return setResults([]);
@@ -102,7 +102,6 @@ export default function NoteActions({ note, token, canEdit, onSave }) {
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
-
       setSummary(res.data.summary || "No summary returned");
       setShowSummary(true);
     } catch (err) {
@@ -113,8 +112,7 @@ export default function NoteActions({ note, token, canEdit, onSave }) {
     }
   };
 
-  // questions
-
+  // ✅ Questions
   const handleQuestions = async () => {
     if (!note?._id) return;
     setLoadingQuestions(true);
@@ -124,7 +122,6 @@ export default function NoteActions({ note, token, canEdit, onSave }) {
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
-
       setQuestions(res.data.questions || "No questions returned");
       setShowQuestions(true);
     } catch (err) {
@@ -135,15 +132,46 @@ export default function NoteActions({ note, token, canEdit, onSave }) {
     }
   };
 
+  // ✅ Export PDF
+  const handleExportPDF = async () => {
+    if (!note?._id) {
+      toast.error("No note to export.");
+      return;
+    }
 
+    try {
+      const res = await axios.get(
+        `${import.meta.env.VITE_API_URL}/api/notes/${note._id}/export/pdf`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          responseType: "blob",
+        }
+      );
+
+      const url = window.URL.createObjectURL(
+        new Blob([res.data], { type: "application/pdf" })
+      );
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `${note.title || "note"}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      toast.success("PDF exported!");
+    } catch (err) {
+      console.error("❌ PDF export failed:", err);
+      toast.error("Failed to export PDF");
+    }
+  };
 
   return (
-    <div className="mt-3 flex gap-2 relative">
+    <div className="mt-3 flex flex-wrap gap-2 relative">
       {canEdit && (
         <>
           <button
             onClick={handleSave}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded"
+            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md font-medium shadow-sm transition"
           >
             Save
           </button>
@@ -152,42 +180,41 @@ export default function NoteActions({ note, token, canEdit, onSave }) {
             <>
               <button
                 onClick={handleDelete}
-                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded"
+                className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md font-medium shadow-sm transition"
               >
                 Delete
               </button>
 
               <button
                 onClick={() => setShowShare(true)}
-                className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded"
+                className="bg-green-50 border border-green-600 text-green-700 hover:bg-green-100 px-4 py-2 rounded-md font-medium shadow-sm transition"
               >
                 Share
               </button>
 
-              {/* <button
+              <button
                 onClick={handleSummarize}
                 disabled={loadingSummary}
-                className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded"
+                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md font-medium shadow-sm transition disabled:opacity-50"
               >
                 {loadingSummary ? "Summarizing..." : "Summarize"}
-              </button> */}
+              </button>
 
-              {/* <button
+              <button
                 onClick={handleQuestions}
                 disabled={loadingQuestions}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded"
+                className="bg-green-50 border border-green-600 text-green-700 hover:bg-green-100 px-4 py-2 rounded-md font-medium shadow-sm transition disabled:opacity-50"
               >
                 {loadingQuestions ? "Generating..." : "Get Questions"}
-              </button> */}
-
+              </button>
             </>
           )}
         </>
       )}
 
-      {/* Floating share panel */}
+      {/* Floating Share Panel */}
       {showShare && (
-        <div className="absolute top-10 right-10 bg-white border shadow-lg rounded p-4 z-50 w-80">
+        <div className="fixed top-24 right-10 bg-white border shadow-lg rounded p-4 z-50 w-80">
           <h3 className="font-semibold mb-2">Share Note</h3>
           <input
             type="text"
@@ -206,7 +233,7 @@ export default function NoteActions({ note, token, canEdit, onSave }) {
               {results.map((u) => (
                 <li
                   key={u._id}
-                  className="px-2 py-1 hover:bg-gray-200 cursor-pointer"
+                  className="px-2 py-1 hover:bg-green-50 cursor-pointer"
                   onClick={() => {
                     setShareUser(u);
                     setTypedUser("");
@@ -231,13 +258,13 @@ export default function NoteActions({ note, token, canEdit, onSave }) {
           <div className="flex justify-end gap-2">
             <button
               onClick={() => setShowShare(false)}
-              className="px-3 py-1 bg-gray-300 rounded"
+              className="bg-white border border-green-600 text-green-600 hover:bg-green-50 px-3 py-1 rounded-md font-medium transition"
             >
               Cancel
             </button>
             <button
               onClick={handleShare}
-              className="px-3 py-1 bg-green-600 text-white rounded"
+              className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-md font-medium transition"
             >
               Share
             </button>
@@ -245,44 +272,26 @@ export default function NoteActions({ note, token, canEdit, onSave }) {
         </div>
       )}
 
-      {/* Summary dialog */}
-      {showSummary && (
-        <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded shadow-lg max-w-lg w-full">
-            <h3 className="font-semibold text-lg mb-4">Note Summary</h3>
-            <p className="whitespace-pre-line">{summary}</p>
-            <div className="flex justify-end mt-4">
+      {/* Use DraggableModal for summary */}
+      <DraggableModal
+        isOpen={showSummary}
+        onClose={() => setShowSummary(false)}
+        results={summary}
+      />
 
+      {/* Use DraggableModal for questions */}
+      <DraggableModal
+        isOpen={showQuestions}
+        onClose={() => setShowQuestions(false)}
+        results={questions}
+      />
 
-              <button
-                onClick={() => setShowSummary(false)}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {showQuestions && (
-        <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50 transition-opacity duration-300">
-          <div className="bg-white p-6 rounded shadow-lg max-w-lg w-full max-h-[80vh] overflow-y-auto transform transition-all duration-300 scale-95 animate-fadeIn">
-            <h3 className="font-semibold text-lg mb-4">Generated Questions</h3>
-            <p className="whitespace-pre-line">{questions}</p>
-
-            <div className="flex justify-end mt-4">
-              <button
-                onClick={() => setShowQuestions(false)}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
+      <button
+        onClick={handleExportPDF}
+        className="bg-green-50 border border-green-600 text-green-700 hover:bg-green-100 px-4 py-2 rounded-md font-medium shadow-sm transition"
+      >
+        Export PDF
+      </button>
     </div>
   );
 }

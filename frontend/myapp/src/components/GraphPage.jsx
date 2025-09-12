@@ -1,123 +1,166 @@
+// GraphPage.jsx — static rows, neon nodes + neon links + blue-hover glow
 import React, { useEffect, useState, useRef } from "react";
-import ForceGraph3D from "react-force-graph-3d";
+import ForceGraph2D from "react-force-graph-2d";
 import { useNavigate } from "react-router-dom";
-import * as THREE from "three";
 
 const API_URL = "http://localhost:5000/api/graph/all";
 
+/* ---------- helper: arrange nodes in rows ---------- */
+function rowLayout(nodes, perRow = 5, dx = 260, dy = 170) {
+  return nodes.map((n, i) => {
+    const x = (i % perRow) * dx;
+    const y = Math.floor(i / perRow) * dy;
+    return { ...n, x, y, fx: x, fy: y };         // lock position
+  });
+}
+
 export default function GraphPage() {
   const [graphData, setGraphData] = useState({ nodes: [], links: [] });
-  const fgRef = useRef();
+  const [hoverNode, setHoverNode] = useState(null);
   const navigate = useNavigate();
+  const fgRef = useRef();
 
+  /* ---------- fetch + layout ---------- */
   useEffect(() => {
     const token = localStorage.getItem("token");
-
-    fetch(API_URL, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then((res) => res.json())
-      .then((data) => setGraphData(data))
-      .catch((err) => console.error("Graph fetch failed:", err));
+    fetch(API_URL, { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => r.json())
+      .then(raw => setGraphData({ nodes: rowLayout(raw.nodes), links: raw.links }))
+      .catch(err => console.error("Graph fetch failed:", err));
   }, []);
 
-  // Add lights for shiny effects
-  useEffect(() => {
-    if (fgRef.current) {
-      const scene = fgRef.current.scene();
+  /* ---------- node painter ---------- */
+  const drawNode = (node, ctx, scale) => {
+    const isHover = node === hoverNode;
 
-      // Remove old lights if they exist
-      scene.children = scene.children.filter(
-        (obj) => !(obj.isLight && obj.userData.fromGraphPage)
-      );
+    const font = 14 / scale;
+    const pad  = 10 / scale;
+    ctx.font   = `bold ${font}px Sans-Serif`;
 
-      // Soft ambient light
-      const ambient = new THREE.AmbientLight(0xaaaaaa, 0.6);
-      ambient.userData.fromGraphPage = true;
-      scene.add(ambient);
+    const title  = node.title  ?? "";
+    const shared = node.sharedWith?.length
+      ? node.sharedWith.map(u => `${u.username} (${u.accessLevel})`).join(", ")
+      : "";
 
-      // Brighter point light
-      const pointLight = new THREE.PointLight(0xffffff, 1.2);
-      pointLight.position.set(100, 100, 200);
-      pointLight.userData.fromGraphPage = true;
-      scene.add(pointLight);
+    const textW = Math.max(ctx.measureText(title).width,
+                           ctx.measureText(shared).width);
+    const w = textW + pad * 2;
+    const h = font * (shared ? 2 : 1) + pad * 2 + (shared ? font * 0.6 : 0);
+    const x = node.x - w / 2;
+    const y = node.y - h / 2;
+    const r = h / 2;                     // pill radius
+
+    /* neon glow (green or blue on hover) */
+    ctx.shadowBlur = 12 / scale;
+    ctx.shadowColor = isHover ? "#00b3ff" : "#00ff9d";
+    ctx.fillStyle   = "#001b11";
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+    ctx.fill();
+
+    /* bright outline */
+    ctx.shadowBlur = 0;
+    ctx.lineWidth  = 3 / scale;
+    ctx.strokeStyle = isHover ? "#00b3ff" : "#00ff9d";
+    ctx.stroke();
+
+    /* text */
+    ctx.fillStyle   = isHover ? "#bfefff" : "#e0ffe9";
+    ctx.textAlign   = "center";
+    ctx.textBaseline= "middle";
+    ctx.fillText(title, node.x, node.y - (shared ? font * 0.4 : 0));
+    if (shared) {
+      ctx.font = `${font * 0.8}px Sans-Serif`;
+      ctx.fillText(shared, node.x, node.y + font * 0.8);
     }
-  }, [graphData]);
 
-  // Helper to create text sprite
-  const createTextSprite = (text, color = "#ffffff", fontSize = 60) => {
-    const canvas = document.createElement("canvas");
-    const context = canvas.getContext("2d");
-    context.font = `${fontSize}px Sans-Serif`;
-    const textWidth = context.measureText(text).width;
-    canvas.width = textWidth;
-    canvas.height = fontSize * 1.4;
-    context.font = `${fontSize}px Sans-Serif`;
-    context.fillStyle = color;
-    context.textAlign = "center";
-    context.textBaseline = "middle";
-    context.fillText(text, canvas.width / 2, canvas.height / 2);
+    node.__dims = { w, h };              // hit area
+  };
 
-    const texture = new THREE.CanvasTexture(canvas);
-    const material = new THREE.SpriteMaterial({ map: texture, transparent: true });
-    const sprite = new THREE.Sprite(material);
-    sprite.scale.set(canvas.width / 10, canvas.height / 10, 1);
-    return sprite;
+  /* ---------- link painter ---------- */
+  const drawLink = (link, ctx, scale) => {
+    const { x:sx, y:sy } = link.source;
+    const { x:tx, y:ty } = link.target;
+
+    /* halo (blue) */
+    ctx.lineWidth   = 6 / scale;
+    ctx.strokeStyle = "rgba(0, 200, 255, 0.6)";
+    ctx.beginPath();
+    ctx.moveTo(sx, sy);
+    ctx.lineTo(tx, ty);
+    ctx.stroke();
+
+    /* core (white) */
+    ctx.lineWidth   = 2.2 / scale;
+    ctx.strokeStyle = "#ffffff";
+    ctx.beginPath();
+    ctx.moveTo(sx, sy);
+    ctx.lineTo(tx, ty);
+    ctx.stroke();
+  };
+
+  const drawNodeArea = (node, color, ctx) => {
+    const d = node.__dims;
+    if (!d) return;
+    ctx.fillStyle = color;
+    ctx.fillRect(node.x - d.w / 2, node.y - d.h / 2, d.w, d.h);
   };
 
   return (
-    <div className="w-full h-screen bg-black">
+    <div className="w-full h-screen bg-black relative">
       <h1 className="absolute top-4 left-4 text-xl font-bold text-white z-10">
         📌 Notes Graph
       </h1>
-      <ForceGraph3D
+
+      <ForceGraph2D
         ref={fgRef}
         graphData={graphData}
-        nodeAutoColorBy="tags"
-        linkDirectionalArrowLength={3.5}
-        linkDirectionalArrowRelPos={1}
-        onNodeClick={(node) => navigate(`/notes?noteId=${node.id}`)}
-        nodeThreeObject={(node) => {
-          // Shiny sphere
-          const geometry = new THREE.SphereGeometry(8, 32, 32);
-          const material = new THREE.MeshPhongMaterial({
-            color: node.color || "#4a90e2",
-            shininess: 100,
-            specular: 0xffffff,
-          });
-          const sphere = new THREE.Mesh(geometry, material);
 
-          // Add label sprite
-          if (node.title) {
-            const sprite = createTextSprite(node.title, "#ffffff", 80);
-            sprite.position.set(0, 15, 0); // above sphere
-            sphere.add(sprite);
-          }
+        /* visuals */
+        backgroundColor="#000"
+        node
+RelSize={0}
+        linkCanvasObjectMode={() => "replace"}
+        linkCanvasObject={drawLink}
+        nodeCanvasObjectMode={() => "after"}
+        nodeCanvasObject={drawNode}
+        nodePointerAreaPaint={drawNodeArea}
 
-          // Rotation animation
-          const speed = 0.01 + Math.random() * 0.02;
-          sphere.tick = () => {
-            sphere.rotation.y += speed;
-            sphere.rotation.x += speed / 2;
-          };
+        /* interactivity */
+        onNodeHover={setHoverNode}
+        onNodeClick={n => navigate(`/notes?noteId=${n.id}`)}
+        zoomPan={true}
+        minZoom={0.5}
+        maxZoom={1.5}
 
-          return sphere;
-        }}
-        linkThreeObject={(link) => {
-          if (!link.label) return null;
-          const sprite = createTextSprite(link.label, "#00ffcc", 60);
-          return sprite;
-        }}
-        linkPositionUpdate={(sprite, { start, end }) => {
-          if (!sprite) return;
-          const middlePos = {
-            x: (start.x + end.x) / 2,
-            y: (start.y + end.y) / 2,
-            z: (start.z + end.z) / 2,
-          };
-          Object.assign(sprite.position, middlePos);
-        }}
+        /* disable physics */
+        d3Force={() => ({})}
+        warmupTicks={0}
+        d3AlphaDecay={0}
       />
     </div>
   );
 }
+
+/* polyfill for ctx.roundRect (older browsers) */
+CanvasRenderingContext2D.prototype.roundRect ??= function (x,y,w,h,r){
+  if (w<2*r) r=w/2;
+  if (h<2*r) r=h/2;
+  this.beginPath();
+  this.moveTo(x+r,y);
+  this.arcTo(x+w,y,x+w,y+h,r);
+  this.arcTo(x+w,y+h,x,y+h,r);
+  this.arcTo(x,y+h,x,y,r);
+  this.arcTo(x,y,x+w,y,r);
+  this.closePath();
+  return this;
+};

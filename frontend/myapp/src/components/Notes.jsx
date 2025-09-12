@@ -6,6 +6,13 @@ import jwtDecode from "jwt-decode";
 import { Navigate } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import SharingLog from "./SharingLog";
+import NoteSearch from "./NoteSearch";
+import NotesSidebar from "./NotesSidebar";
+import NotesHeader from "./NotesHeader";
+import EditorSection from "./EditorSection";
+
+
+
 
 
 export default function Notes() {
@@ -15,8 +22,11 @@ export default function Notes() {
   const [selectedNote, setSelectedNote] = useState(null);
   const token = localStorage.getItem("token");
   const [showNotesPanel, setShowNotesPanel] = useState(false);
+  const [showSidebar, setShowSidebar] = useState(false);
 
+  
 
+  
   // Decode JWT to get username
   useEffect(() => {
   const params = new URLSearchParams(window.location.search);
@@ -85,78 +95,35 @@ export default function Notes() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <header className="flex justify-between items-center p-4 bg-blue-600 text-white">
-        <h1 className="text-xl font-bold">Welcome, {username}</h1>
-        <div className="flex gap-2">
-  <button
-    onClick={handleAddNote}
-    className="bg-green-500 hover:bg-green-600 px-4 py-2 rounded"
-  >
-    Add Note
-  </button>
-
-  <button
-  onClick={() => setShowNotesPanel((prev) => !prev)}
-  className="bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded"
->
-  {showNotesPanel ? "Hide Notes" : "Show Notes"}
-</button>
+      <NotesHeader
+  username={username}
+  notes={notes}
+  onSelectNote={setSelectedNote}
+  onAddNote={handleAddNote}
+  onToggleSidebar={() => setShowSidebar((prev) => !prev)} // ✅ toggle sidebar
+  showSidebar={showSidebar} // ✅ pass down
+  onTogglePanel={() => setShowNotesPanel(prev => !prev)}
+  showNotesPanel={showNotesPanel}
+  onLogout={handleLogout}
+  onNavigateGraph={() => navigate("/graph")}
+/>
 
 
-  <button
-    onClick={() => navigate("/graph")}
-    className="bg-yellow-500 hover:bg-yellow-600 px-4 py-2 rounded"
-  >
-    Graph
-  </button>
 
-  <button
-    onClick={handleLogout}
-    className="bg-red-500 hover:bg-red-600 px-4 py-2 rounded"
-  >
-    Logout
-  </button>
+     <div className="flex flex-1 overflow-hidden">
+  
+
+  <EditorSection
+    selectedNote={selectedNote}
+    token={token}
+    onSave={handleNoteSave}
+  />
 </div>
 
-      </header>
+      {showNotesPanel && (
+  <SharingLog token={token} onClose={() => setShowNotesPanel(false)} />
+)}
 
-      <div className="flex flex-1 overflow-hidden">
-        <aside className="w-1/6 p-4 border-r overflow-y-auto">
-          <h2 className="font-semibold mb-4">Your Notes</h2>
-          {notes.length === 0 ? (
-            <p>No notes found</p>
-          ) : (
-            notes.map((note) => (
-              <div
-                key={note._id || note.title}
-                onClick={() => setSelectedNote(note)}
-                className={`p-3 mb-2 border rounded cursor-pointer ${
-                  selectedNote === note ? "bg-gray-200" : "hover:bg-gray-100"
-                }`}
-              >
-                <h3 className="font-semibold">{note.title || "Untitled Note"}</h3>
-              </div>
-            ))
-          )}
-            
-        </aside>
-
-        <section className="flex-1 p-4">
-  <h2 className="text-lg font-semibold mb-2">Editor</h2>
-  {selectedNote ? (
-    <NoteEditor
-      note={selectedNote}
-      token={token}
-      onSave={handleNoteSave}
-      canEdit={selectedNote.canWrite} // ✅ use backend flag
-    />
-  ) : (
-    <p className="text-gray-500">Select a note or add a new one</p>
-  )}
-</section>
-
-      </div>
-      {showNotesPanel && <SharingLog token={token} />}
     </div>
   );
 }

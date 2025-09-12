@@ -1,9 +1,9 @@
-// SearchResultModal.jsx
+// DraggableModal.jsx
 import MDEditor from "@uiw/react-md-editor";
 import { useState, useRef, useEffect } from "react";
 import { FiX, FiMinus, FiMaximize2, FiCopy, FiCheck } from "react-icons/fi";
 
-export default function SearchResultModal({ isOpen, onClose, results }) {
+export default function DraggableModal({ isOpen, onClose, results }) {
   const [minimized, setMinimized] = useState(false);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [dragging, setDragging] = useState(false);
@@ -86,7 +86,7 @@ export default function SearchResultModal({ isOpen, onClose, results }) {
           onMouseDown={handleMouseDown}
         >
           <h2 className="text-sm font-bold truncate select-none">
-            {minimized ? "🔍 Search Results (Minimized)" : "🔍 Search Results"}
+            {minimized ? "🔍 Results (Minimized)" : "🔍 Results"}
           </h2>
           <div className="flex space-x-2 items-center">
             {!minimized && (
