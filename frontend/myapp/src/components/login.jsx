@@ -5,7 +5,7 @@ import { FiMail, FiLock, FiUser } from "react-icons/fi";
 import { FcGoogle } from "react-icons/fc";
 
 export default function Login() {
-  const [isRegister, setIsRegister] = useState(false); // 👈 toggle state
+  const [isRegister, setIsRegister] = useState(false);
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -21,58 +21,65 @@ export default function Login() {
     } else {
       alert(data.msg || "Login failed");
     }
-    
   }
 
   async function handleRegister(e) {
     e.preventDefault();
-    const data = await register(username, email, password);
-    if(password !== confirmPassword){
+
+    if (password !== confirmPassword) {
       setPassword("");
       setConfirmPassword("");
-      alert("Password and Confirm Password not match")
+      alert("Password and Confirm Password do not match");
       return;
     }
+
+    const data = await register(username, email, password);
     if (data.token) {
       localStorage.setItem("token", data.token);
       navigate("/dashboard");
     } else {
       alert(data.msg || "Register failed");
-    } 
-
-
+    }
   }
 
-
   return (
-    <div className="flex min-h-screen bg-gradient-to-r from-white-100 via-sky-500 to-pink-700">
-      {/* Left side - Intro */}
-      <div className="w-1/2 flex flex-col justify-center p-12 text-gray-800">
-        <h1 className="text-5xl font-bold mb-4">
+    <div className="flex flex-col md:flex-row min-h-screen bg-gradient-to-r from-white via-sky-400 to-pink-500">
+      {/* ---------- Left desktop block (md and up) ---------- */}
+      <div className="hidden md:flex md:w-1/2 flex-col justify-center p-12 text-gray-800 text-left md:order-1">
+        <h1 className="text-3xl md:text-5xl font-bold mb-4">
           Welcome to <span className="text-yellow-600">NoteSilo</span>
         </h1>
-        <h3 className="text-2xl mb-6 font-semibold">
+        <h3 className="text-xl md:text-2xl mb-6 font-semibold">
           Your personal, secure, and smart note-taking companion
         </h3>
-        <p className="text-lg leading-relaxed">
+        <p className="text-base md:text-lg leading-relaxed max-w-lg">
           NoteSilo is a modern note-taking web app that lets you create, edit,
           and organize your notes anytime, anywhere. With secure authentication
           (Email/Password & Google login), your notes stay private while being
-          easily accessible.
+          easily accessible...
         </p>
       </div>
 
-      {/* Right side - Auth Card */}
-      <div className="w-1/2 flex items-center justify-center">
-        <div className="w-full max-w-md p-8 bg-white shadow-lg rounded-2xl">
-          <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">
+      {/* ---------- Intro top for small screens only (heading + tagline) ---------- */}
+      <div className="w-full md:hidden flex flex-col justify-center p-6 text-gray-800 text-center order-1">
+        <h1 className="text-3xl font-bold mb-2">
+          Welcome to <span className="text-yellow-600">NoteSilo</span>
+        </h1>
+        <h3 className="text-lg mb-4 font-semibold">
+          Your personal, secure, and smart note-taking companion
+        </h3>
+      </div>
+
+      {/* ---------- Auth Card (always shown, right on md) ---------- */}
+      <div className="w-full md:w-1/2 flex items-center justify-center px-4 py-8 order-2 md:order-2">
+        <div className="w-full max-w-md p-6 md:p-8 bg-white shadow-lg rounded-2xl">
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-6 text-center">
             {isRegister ? "Register" : "Login"}
           </h2>
 
           {/* Login Form */}
           {!isRegister && (
             <form className="flex flex-col gap-4" onSubmit={handleLogin}>
-              {/* Email */}
               <div className="flex items-center border rounded-lg px-3">
                 <FiMail className="text-gray-500 mr-2" />
                 <input
@@ -80,11 +87,10 @@ export default function Login() {
                   placeholder="Email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full p-2 outline-none"
+                  className="w-full p-2 outline-none text-sm md:text-base"
                 />
               </div>
 
-              {/* Password */}
               <div className="flex items-center border rounded-lg px-3">
                 <FiLock className="text-gray-500 mr-2" />
                 <input
@@ -92,17 +98,17 @@ export default function Login() {
                   placeholder="Password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full p-2 outline-none"
+                  className="w-full p-2 outline-none text-sm md:text-base"
                 />
               </div>
 
-              <div className="text-blue-600 hover:underline flex justify-end">
+              <div className="text-blue-600 hover:underline flex justify-end text-sm md:text-base">
                 <Link to="/forgot-password">Forgot Password?</Link>
               </div>
 
               <button
                 type="submit"
-                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition"
+                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 md:py-3 rounded-lg transition"
               >
                 Login
               </button>
@@ -112,7 +118,6 @@ export default function Login() {
           {/* Register Form */}
           {isRegister && (
             <form className="flex flex-col gap-4" onSubmit={handleRegister}>
-              {/* Username */}
               <div className="flex items-center border rounded-lg px-3">
                 <FiUser className="text-gray-500 mr-2" />
                 <input
@@ -120,11 +125,10 @@ export default function Login() {
                   placeholder="Username"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  className="w-full p-2 outline-none"
+                  className="w-full p-2 outline-none text-sm md:text-base"
                 />
               </div>
 
-              {/* Email */}
               <div className="flex items-center border rounded-lg px-3">
                 <FiMail className="text-gray-500 mr-2" />
                 <input
@@ -132,11 +136,10 @@ export default function Login() {
                   placeholder="Email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full p-2 outline-none"
+                  className="w-full p-2 outline-none text-sm md:text-base"
                 />
               </div>
 
-              {/* Password */}
               <div className="flex items-center border rounded-lg px-3">
                 <FiLock className="text-gray-500 mr-2" />
                 <input
@@ -144,11 +147,10 @@ export default function Login() {
                   placeholder="Password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full p-2 outline-none"
+                  className="w-full p-2 outline-none text-sm md:text-base"
                 />
               </div>
 
-              {/* Confirm Password */}
               <div className="flex items-center border rounded-lg px-3">
                 <FiLock className="text-gray-500 mr-2" />
                 <input
@@ -156,14 +158,13 @@ export default function Login() {
                   placeholder="Confirm Password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full p-2 outline-none"
+                  className="w-full p-2 outline-none text-sm md:text-base"
                 />
               </div>
 
-
               <button
                 type="submit"
-                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition"
+                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 md:py-3 rounded-lg transition"
               >
                 Register
               </button>
@@ -179,17 +180,17 @@ export default function Login() {
                 <div className="flex-grow h-px bg-gray-300"></div>
               </div>
               <button
-                className="w-full flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white font-semibold py-3 rounded-lg transition"
+                className="w-full flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white font-semibold py-2 md:py-3 rounded-lg transition"
                 onClick={googleLogin}
               >
-                <FcGoogle className="text-xl bg-white rounded-full" />
+                <FcGoogle className="text-lg md:text-xl bg-white rounded-full" />
                 Sign in with Google
               </button>
             </>
           )}
 
-          {/* Toggle between Login & Register */}
-          <div className="flex justify-center mt-8">
+          {/* Toggle */}
+          <div className="flex justify-center mt-6 md:mt-8 text-sm md:text-base">
             {isRegister ? (
               <p>
                 Already have an account?{" "}
@@ -215,6 +216,17 @@ export default function Login() {
             )}
           </div>
         </div>
+      </div>
+
+      {/* ---------- Description for small screens only (placed after auth) ---------- */}
+      <div className="w-full md:hidden p-6 text-gray-800 text-center order-3">
+        <p className="font-sans text-base leading-relaxed max-w-lg mx-auto text-gray-700">
+  NoteSilo is a modern note-taking web app that lets you create, edit,
+  and organize your notes anytime, anywhere. With secure authentication
+  (Email/Password & Google login), your notes stay private while being
+  easily accessible...
+</p>
+
       </div>
     </div>
   );
