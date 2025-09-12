@@ -1,26 +1,125 @@
 import { useState, useEffect, useRef } from "react";
-import MDEditor from "@uiw/react-md-editor";
+import MDEditor, { commands } from "@uiw/react-md-editor";
 import axios from "axios";
 import NoteActions from "./NoteActions";
+import DraggableModal from "./DraggableModal";
 
 export default function NoteEditor({ note, token, onSave, canEdit }) {
   const [title, setTitle] = useState(note?.title || "Untitled");
   const [content, setContent] = useState(note?.content || "");
   const [notes, setNotes] = useState([]);
   const [suggestions, setSuggestions] = useState([]);
-  const [, setQuery] = useState("");
-  const editorRef = useRef(null);
+  const [query, setQuery] = useState("");
   const [cursorPos, setCursorPos] = useState(0);
+  const [showResults, setShowResults] = useState(false);
+  const [results, setResults] = useState("");
 
-  // ✅ Auto-resize textarea
-  useEffect(() => {
-    const textarea = editorRef.current?.querySelector("textarea");
-    if (!textarea) return;
-    textarea.style.height = "auto";
-    textarea.style.height = textarea.scrollHeight + "px";
-  }, [content]);
 
-  // ✅ Load note when prop changes
+  const editorRef = useRef(null);
+  const filteredCommands = commands.getCommands().filter(
+    (cmd) => cmd.name !== "image"
+  );
+
+ const [suggestionPos, setSuggestionPos] = useState({ top: 0, left: 0 });
+
+useEffect(() => {
+  if (!suggestions.length) return;
+
+  const textarea = editorRef.current?.querySelector("textarea");
+  if (!textarea) return;
+
+  const { top, left, height } = getCursorCoordinates(textarea, cursorPos);
+  setSuggestionPos({ top: top + height + 8, left: left + 12 });
+}, [cursorPos, suggestions]);
+
+function getCursorCoordinates(textarea, position) {
+  const div = document.createElement("div");
+  const style = window.getComputedStyle(textarea);
+
+  Array.from(style).forEach((key) => {
+    div.style[key] = style[key];
+  });
+
+  div.style.position = "absolute";
+  div.style.visibility = "hidden";
+  div.style.whiteSpace = "pre-wrap";
+  div.style.wordWrap = "break-word";
+
+  const text = textarea.value.substring(0, position);
+  div.textContent = text;
+
+  const span = document.createElement("span");
+  span.textContent = "\u200b"; // zero-width space for cursor
+  div.appendChild(span);
+
+  document.body.appendChild(div);
+  const rect = span.getBoundingClientRect();
+  document.body.removeChild(div);
+
+  const containerRect = editorRef.current.getBoundingClientRect();
+  return {
+    top: rect.top - containerRect.top,
+    left: rect.left - containerRect.left,
+    height: rect.height || 16, // default line height fallback
+  };
+}
+
+const handleImageUpload = async (file) => {
+    const formData = new FormData();
+    formData.append("image", file);
+
+    try {
+      const res = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/upload`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      return res.data.url; // <- your Cloudinary URL from controller
+    } catch (err) {
+      console.error("Image upload failed:", err);
+      return null;
+    }
+  };
+
+
+
+
+
+    // eslint-disable-next-line no-unused-vars
+    const uploadImageCommand = {
+    name: "upload-image",
+    keyCommand: "upload-image",
+    buttonProps: { "aria-label": "Upload image" },
+    icon: (
+  <span style={{ fontSize: 16 }}>🖼️</span>
+),
+    execute: async (state, api) => {
+      // Open file picker
+      const input = document.createElement("input");
+      input.type = "file";
+      input.accept = "image/*";
+      input.click();
+
+      input.onchange = async () => {
+        const file = input.files?.[0];
+        if (!file) return;
+
+        const url = await handleImageUpload(file);
+        if (!url) return;
+
+        const markdownImage = `![alt text](${url})`;
+
+        api.replaceSelection(markdownImage);
+      };
+    },
+  };
+
+  // Load note when prop changes
   useEffect(() => {
     if (note) {
       setTitle(note.title || "Untitled");
@@ -28,7 +127,7 @@ export default function NoteEditor({ note, token, onSave, canEdit }) {
     }
   }, [note]);
 
-  // ✅ Fetch all notes for reference search
+  // Fetch all notes
   useEffect(() => {
     if (!token) return;
     axios
@@ -36,22 +135,22 @@ export default function NoteEditor({ note, token, onSave, canEdit }) {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((res) => setNotes(res.data))
-      .catch((err) => console.error("❌ Failed to fetch notes:", err));
+      .catch((err) => console.error(err));
   }, [token]);
 
-  // ✅ Extract all headings from a note
+  // Extract headings from a note
   const extractHeadings = (note) => {
     if (!note?.content) return [];
     const regex = /^(#{1,6})\s+(.*)$/gm;
     const matches = [];
     let match;
     while ((match = regex.exec(note.content))) {
-      matches.push({ noteId: note._id, noteTitle: note.title, text: match[2] });
+      matches.push({ noteTitle: note.title, text: match[2] });
     }
     return matches;
   };
 
-  // ✅ Detect [[query near cursor
+  // Handle editor changes & detect [[query
   const handleEditorChange = (val = "") => {
     setContent(val);
 
@@ -73,92 +172,144 @@ export default function NoteEditor({ note, token, onSave, canEdit }) {
           h.text.toLowerCase().includes(q) ||
           h.noteTitle.toLowerCase().includes(q)
       );
-
       setSuggestions(filtered.slice(0, 5));
     } else {
       setSuggestions([]);
     }
   };
 
-  // ✅ Insert selected reference
+  // Insert selected reference
   const insertReference = (s) => {
     const refText = `[[${s.noteTitle}: ${s.text}]]`;
 
+    const textarea = editorRef.current?.querySelector("textarea");
+    if (!textarea) return;
+
     const before = content.slice(0, cursorPos);
-    const match = before.match(/\[\[([^\]]*)$/);
+    const start = before.lastIndexOf("[[");
+    const newContent = content.slice(0, start) + refText + content.slice(cursorPos);
 
-    if (match) {
-      const start = before.lastIndexOf("[[");
-      const newContent =
-        content.slice(0, start) + refText + content.slice(cursorPos);
+    setContent(newContent);
+    setSuggestions([]);
 
-      setContent(newContent);
-      setSuggestions([]);
-
-      setCursorPos(start + refText.length);
-    }
-  };
-
-  // ✅ Render references in read-only mode
-  const renderWithReferences = (text) => {
-    if (typeof text !== "string") return text;
-    const refRegex = /\[\[(.+?): (.+?)\]\]/g;
-
-    return text.replace(refRegex, (match, noteTitle, heading) => {
-      return `<a href="#${noteTitle}-${heading}" class="text-blue-600 underline">${noteTitle}: ${heading}</a>`;
+    // Move cursor after inserted reference
+    requestAnimationFrame(() => {
+      textarea.focus();
+      textarea.selectionStart = textarea.selectionEnd = start + refText.length;
     });
   };
 
+  // Extract sections and render [[Note: Heading]] as accordion
+  const extractSections = (content) => {
+    if (!content) return [];
+    const lines = content.split("\n");
+    const sections = [];
+    let current = null;
+    for (let line of lines) {
+      const headingMatch = /^(#{1,6})\s+(.*)$/.exec(line);
+      if (headingMatch) {
+        if (current) sections.push(current);
+        current = { level: headingMatch[1].length, title: headingMatch[2], body: [] };
+      } else if (current) {
+        current.body.push(line);
+      }
+    }
+    if (current) sections.push(current);
+    return sections;
+  };
+
+ const renderWithReferences = (text) => {
+  if (!text) return text;
+
+  return text.replace(/\[\[(.+?): (.+?)\]\]/g, (_, noteTitle, headingText) => {
+    const refNote = notes.find((n) => n.title === noteTitle);
+    if (!refNote) return `[[${noteTitle}: ${headingText}]]`;
+
+    const sections = extractSections(refNote.content);
+    const target = sections.find((s) => s.title.trim() === headingText.trim());
+    if (!target) return `[[${noteTitle}: ${headingText}]]`;
+
+    const innerMarkdown = target.body.join("\n");
+    return `### ${noteTitle}: ${headingText}\n\n${innerMarkdown}`;
+  });
+};
+
+
+
+  const previewReferencesCommand = {
+  name: "preview-references",
+  keyCommand: "preview-references",
+  buttonProps: { "aria-label": "Preview references" },
+  icon: <span>📖</span>,
+  execute: () => {
+    const processed = renderWithReferences(content);
+    setResults(processed);
+    setShowResults(true);
+  },
+};
+
   return (
-    <div className="p-2 rounded bg-white text-black relative" ref={editorRef}>
-      {canEdit ? (
-        <>
-          {/* ✅ Editable Title */}
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="w-full text-2xl font-bold mb-3 border-b border-gray-300 outline-none focus:border-blue-500"
-          />
+    <div className="p-2 bg-white rounded relative" ref={editorRef}>
+      {canEdit && (
+        <input
+          type="text"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          className="border p-2 rounded w-full mb-2 text-xl font-bold"
+        />
+      )}
 
-          <MDEditor
-            value={content}
-            onChange={handleEditorChange}
-            height={400}
-          />
 
-          {/* Floating Suggestion Dropdown */}
-          {suggestions.length > 0 && (
-            <ul className="absolute left-4 bottom-20 bg-white border rounded shadow p-2 max-h-40 overflow-y-auto z-10 w-80">
-              {suggestions.map((s, i) => (
-                <li
-                  key={i}
-                  onClick={() => insertReference(s)}
-                  className="cursor-pointer hover:bg-gray-200 px-2 py-1"
-                >
-                  <strong>{s.noteTitle}</strong> → {s.text}
-                </li>
-              ))}
-            </ul>
-          )}
 
-          <NoteActions
-            note={{ ...note, title, content }}
-            token={token}
-            canEdit={canEdit}
-            onSave={onSave}
-          />
-        </>
-      ) : (
-        <>
-          <h1 className="text-3xl font-bold mb-4 text-center">{title}</h1>
-          <div className="prose max-w-none">
-            <MDEditor.Markdown
-              source={renderWithReferences(content)}
-              style={{ whiteSpace: "pre-wrap" }}
-            />
-          </div>
-        </>
+
+
+<MDEditor
+  value={content}
+  onChange={(val) => handleEditorChange(val ?? "")}
+  commands={[
+    ...filteredCommands,
+    uploadImageCommand,
+    previewReferencesCommand, // new button
+  ]}
+  extraCommands={commands.getExtraCommands()}
+  height={Math.max(400, Math.min(800, content.split("\n").length * 24))} // dynamic height
+/>
+
+
+<DraggableModal
+  isOpen={showResults}
+  onClose={() => setShowResults(false)}
+  results={results}
+  title="Preview"
+/>
+
+      {/* Floating Suggestion Box */}
+{suggestions.length > 0 && (
+  <ul
+    className="absolute bg-white border rounded shadow p-2 max-h-40 overflow-y-auto z-10 w-80"
+    style={{ top: suggestionPos.top, left: suggestionPos.left }}
+  >
+    {suggestions.map((s, i) => (
+      <li
+        key={i}
+        onClick={() => insertReference(s)}
+        className="cursor-pointer hover:bg-gray-200 px-2 py-1"
+      >
+        <strong>{s.noteTitle}</strong> → {s.text}
+      </li>
+    ))}
+  </ul>
+)}
+
+
+
+      {canEdit && (
+        <NoteActions
+          note={{ ...note, title, content }}
+          token={token}
+          canEdit={canEdit}
+          onSave={onSave}
+        />
       )}
     </div>
   );

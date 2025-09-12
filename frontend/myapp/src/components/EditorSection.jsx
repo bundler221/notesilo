@@ -1,9 +1,10 @@
 import NoteEditor from "./NoteEditor";
+import NoteEdituh from "./NoteEdituh";
 
 export default function EditorSection({ selectedNote, token, onSave }) {
   return (
     <section className="flex-1 p-4">
-      <h2 className="text-lg font-semibold mb-2">Editor</h2>
+      
       {selectedNote ? (
         <NoteEditor
           note={selectedNote}
