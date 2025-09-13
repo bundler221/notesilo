@@ -250,14 +250,14 @@ const handleImageUpload = async (file) => {
 
   return (
     <div className="p-2 bg-white rounded relative" ref={editorRef}>
-      {canEdit && (
-        <input
-          type="text"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          className="border p-2 rounded w-full mb-2 text-xl font-bold"
-        />
-      )}
+      {/* {canEdit && (
+        // <input
+        //   type="text"
+        //   value={title}
+        //   onChange={(e) => setTitle(e.target.value)}
+        //   className="border p-2 rounded w-full mb-2 text-xl font-bold"
+        // />
+      )} */}
 
 
 

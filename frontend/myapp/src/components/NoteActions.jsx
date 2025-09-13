@@ -171,7 +171,7 @@ export default function NoteActions({ note, token, canEdit, onSave }) {
         <>
           <button
             onClick={handleSave}
-            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md font-medium shadow-sm transition"
+            className="bg-green-600 hover:bg-black text-white px-4 py-2 rounded-md font-medium shadow-sm transition"
           >
             Save
           </button>
@@ -180,19 +180,19 @@ export default function NoteActions({ note, token, canEdit, onSave }) {
             <>
               <button
                 onClick={handleDelete}
-                className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md font-medium shadow-sm transition"
+                className="bg-red-500  hover:bg-black  text-white px-4 py-2 rounded-md font-medium shadow-sm transition"
               >
                 Delete
               </button>
 
               <button
                 onClick={() => setShowShare(true)}
-                className="bg-green-50 border border-green-600 text-green-700 hover:bg-green-100 px-4 py-2 rounded-md font-medium shadow-sm transition"
+                className="bg-slate-500 border  text-white hover:bg-black px-4 py-2 rounded-md font-medium shadow-sm transition"
               >
                 Share
               </button>
 
-              <button
+              {/* <button
                 onClick={handleSummarize}
                 disabled={loadingSummary}
                 className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md font-medium shadow-sm transition disabled:opacity-50"
@@ -206,7 +206,7 @@ export default function NoteActions({ note, token, canEdit, onSave }) {
                 className="bg-green-50 border border-green-600 text-green-700 hover:bg-green-100 px-4 py-2 rounded-md font-medium shadow-sm transition disabled:opacity-50"
               >
                 {loadingQuestions ? "Generating..." : "Get Questions"}
-              </button>
+              </button> */}
             </>
           )}
         </>
@@ -258,13 +258,13 @@ export default function NoteActions({ note, token, canEdit, onSave }) {
           <div className="flex justify-end gap-2">
             <button
               onClick={() => setShowShare(false)}
-              className="bg-white border border-green-600 text-green-600 hover:bg-green-50 px-3 py-1 rounded-md font-medium transition"
+              className="bg-red-500 text-white hover:bg-red-700 px-3 py-1 rounded-md font-medium transition"
             >
               Cancel
             </button>
             <button
               onClick={handleShare}
-              className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-md font-medium transition"
+              className="bg-slate-600 hover:bg-black  text-white px-3 py-1 rounded-md font-medium transition"
             >
               Share
             </button>
@@ -286,12 +286,12 @@ export default function NoteActions({ note, token, canEdit, onSave }) {
         results={questions}
       />
 
-      <button
+      {/* <button
         onClick={handleExportPDF}
         className="bg-green-50 border border-green-600 text-green-700 hover:bg-green-100 px-4 py-2 rounded-md font-medium shadow-sm transition"
       >
         Export PDF
-      </button>
+      </button> */}
     </div>
   );
 }

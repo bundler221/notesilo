@@ -310,7 +310,7 @@ export default function Dashboard() {
                     setIsSearching(false);
                   }}
                   disabled={isSearching}
-                  className="px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-500 disabled:opacity-50"
+                  className="border border-gray-900 text-gray-900 hover:bg-gray-900 hover:text-white font-medium px-5 py-2 rounded-lg shadow-md transition-all duration-200 ease-in-out"
                 >
                   {isSearching ? "Searching..." : "Search"}
                 </button>
@@ -320,16 +320,18 @@ export default function Dashboard() {
 
             {/* CENTER: project name — absolutely centered on large screens to avoid layout shifting */}
             <div className="absolute left-1/2 transform -translate-x-1/2 hidden lg:block">
-              <h1 className="text-3xl font-bold text-gray-900"><span className=" text-yellow-600">N</span>oteSilo</h1>
+              <h1 className="text-3xl font-bold "><span className="bg-gradient-to-r from-gray-300 via-gray-500 to-gray-700 bg-clip-text text-transparent animate-pulse">
+                N
+              </span>oteSilo</h1>
             </div>
 
             {/* RIGHT group */}
             <div className="flex items-center space-x-3 flex-shrink-0">
               <button
                 onClick={() => navigate("/graph")}
-                className="flex items-center px-3 py-1 bg-blue-600 hover:bg-blue-500 text-white rounded-md transition text-sm sm:text-base"
+                className=" flex border border-gray-900 text-gray-900 hover:bg-gray-900 hover:text-white font-medium px-5 py-2 rounded-lg shadow-md transition-all duration-200 ease-in-out"
               >
-                <FiShare2 className="mr-1" /> Graph
+                <FiShare2 className=" flex mr-1" /> Graph
               </button>
 
               <button
@@ -353,7 +355,7 @@ export default function Dashboard() {
               />
               <button
                 onClick={handleSearch}
-                className="px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-500"
+                className="px-3 py-2 bg-black-600 text-white rounded hover:bg-black-500"
               >
                 Search
               </button>

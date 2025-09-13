@@ -11,6 +11,7 @@ export default function UserGuide() {
               This guide explains how to use NoteSilo from first login through advanced features,
               troubleshooting, and support.
             </p>
+            <h2 className=" text-xl">For Markdown Syntax, Please Click on <a className="text-blue-600 underline" href="https://www.markdownguide.org/basic-syntax/" target="_blank">Here</a> </h2>
           </header>
 
           <section className="mb-8">
@@ -215,3 +216,4 @@ This is **bold text** and this is *italic text*.
     </main>
   );
 }
+
