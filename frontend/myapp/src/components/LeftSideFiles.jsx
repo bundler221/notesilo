@@ -7,6 +7,7 @@ import { Link, useNavigate } from "react-router-dom";
 import NoteEditor from "./NoteEditor";
 import UserGuide from './UserGuide'
 import AboutUs from "./AboutUs";
+import SharingLog from "./SharingLog";
 import {
   FiMenu,
   FiChevronLeft,
@@ -34,7 +35,10 @@ export default function Dashboard() {
   const [leftOpen, setLeftOpen] = useState(false);
   const [rightOpen, setRightOpen] = useState(false);
   const [fileMenuOpen, setFileMenuOpen] = useState(false);
+  const [showSharingLog, setShowSharingLog] = useState(false);
   const token = localStorage.getItem("token");
+
+  const toggleSharingLog = () => setShowSharingLog((prev) => !prev);
 
   const fileMenuRef = useRef(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -469,6 +473,7 @@ export default function Dashboard() {
             >
               <FiChevronLeft className="rotate-180" />
             </button>
+
             <h2 className="text-xl font-bold">Profile</h2>
           </div>
 
@@ -478,6 +483,7 @@ export default function Dashboard() {
             </div>
             <p className="font-semibold">{username}</p>
           </div>
+
 
           <ul className="space-y-3">
             <li
@@ -499,8 +505,16 @@ export default function Dashboard() {
                 About Us
               </Link>
             </li>
+            
           </ul>
+            <button
+        onClick={toggleSharingLog}
+        className="bg-white border border-green-600 text-green-600 px-4 py-2 rounded-md font-medium shadow-sm hover:bg-green-50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-green-500"
+      >
+        {showSharingLog ? "Hide Sharing" : "Manage"}
+      </button>
 
+      {showSharingLog && <SharingLog token={token} onClose={toggleSharingLog} />}
           <div className="absolute bottom-6 left-0 w-full px-4">
             <button
               onClick={handleLogout}
@@ -508,6 +522,7 @@ export default function Dashboard() {
             >
               <FiLogOut className="mr-2" /> Logout
             </button>
+
           </div>
         </div>
       </div>
