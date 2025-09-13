@@ -249,10 +249,10 @@ export default function NoteActions({ note, token, canEdit, onSave }) {
           <select
             value={accessLevel}
             onChange={(e) => setAccessLevel(e.target.value)}
-            className="border p-2 w-full mb-2 rounded"
+            className="border p-2 w-full mb-2 rounded "
           >
-            <option value="read">Read</option>
-            <option value="write">Write</option>
+            <option value="read" className="hover:bg-gray-800">Read</option>
+            <option value="write" className="hover:bg-gray-800">Write</option>
           </select>
 
           <div className="flex justify-end gap-2">

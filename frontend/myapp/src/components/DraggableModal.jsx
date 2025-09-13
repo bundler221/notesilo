@@ -5,7 +5,6 @@ import { FiX, FiMinus, FiMaximize2, FiCopy, FiCheck } from "react-icons/fi";
 export default function DraggableModal({ isOpen, onClose, results, title }) {
   const [minimized, setMinimized] = useState(false);
   const [position, setPosition] = useState({ x: 100, y: 100 });
-  // eslint-disable-next-line no-unused-vars
   const [size, setSize] = useState({ width: 700, height: 500 });
   const [dragging, setDragging] = useState(false);
   const [zIndex, setZIndex] = useState(50);
@@ -64,10 +63,12 @@ export default function DraggableModal({ isOpen, onClose, results, title }) {
   /** Bring to front & center when bottom clicked */
   const handleBringToFront = () => {
     setZIndex((prev) => prev + 1);
-    setPosition({
-      x: window.innerWidth / 2 - size.width / 2,
-      y: window.innerHeight / 2 - size.height / 2,
-    });
+    if (!minimized) {
+      setPosition({
+        x: window.innerWidth / 2 - size.width / 2,
+        y: window.innerHeight / 2 - size.height / 2,
+      });
+    }
   };
 
   if (!isOpen) return null;
@@ -79,19 +80,19 @@ export default function DraggableModal({ isOpen, onClose, results, title }) {
         style={{
           width: minimized ? 280 : size.width,
           height: minimized ? 40 : size.height,
-          transform: minimized ? "none" : `translate(${position.x}px, ${position.y}px)`,
+          transform: `translate(${position.x}px, ${position.y}px)`,
           pointerEvents: "auto",
           zIndex,
           position: "absolute",
         }}
-        onDoubleClick={() => setZIndex((prev) => prev + 1)} // Optional: double click also brings front
+        onDoubleClick={() => setZIndex((prev) => prev + 1)}
       >
         {/* Header */}
         <div
-          className={`flex justify-between items-center border-b pb-1 cursor-move bg-gray-200 px-2 rounded-t-lg`}
+          className={`flex justify-between items-center border-b pb-2.5 cursor-move bg-gray-200 px-2 rounded-lg`}
           onMouseDown={handleDragStart}
         >
-          <h2 className="text-sm font-bold truncate select-none">
+          <h2 className="text-sm font-bold truncate select-none pt-2.5">
             {minimized ? `🔍 ${title} (Minimized)` : `🔍 ${title}`}
           </h2>
           <div className="flex space-x-2 items-center">
@@ -101,14 +102,33 @@ export default function DraggableModal({ isOpen, onClose, results, title }) {
               </button>
             )}
             {minimized ? (
-              <button onClick={() => setMinimized(false)} className="p-1 rounded hover:bg-gray-200">
-                <FiMaximize2 size={16} />
-              </button>
-            ) : (
-              <button onClick={() => setMinimized(true)} className="p-1 rounded hover:bg-gray-200">
-                <FiMinus size={16} />
-              </button>
-            )}
+  <button
+    onClick={() => {
+      setMinimized(false);
+      setPosition({
+        x: window.innerWidth / 2 - size.width / 2,
+        y: window.innerHeight / 2 - size.height / 2,
+      });
+    }}
+    className="p-1 rounded hover:bg-gray-200"
+  >
+    <FiMaximize2 size={16} />
+  </button>
+) : (
+  <button
+    onClick={() => {
+      setMinimized(true);
+      setPosition({
+        x: window.innerWidth * 0.75 - 140, // top ~75% right
+        y: 20, // little below top
+      });
+    }}
+    className="p-1 rounded hover:bg-gray-200"
+  >
+    <FiMinus size={16} />
+  </button>
+)}
+
             <button onClick={onClose} className="p-1 rounded hover:bg-red-200">
               <FiX size={16} />
             </button>
@@ -118,8 +138,9 @@ export default function DraggableModal({ isOpen, onClose, results, title }) {
         {/* Content */}
         {!minimized && (
           <div
-            className="mt-2 prose max-w-none h-full cursor-pointer"
-            onClick={handleBringToFront} // Click anywhere inside content brings front & center
+            className="mt-2 prose max-w-none cursor-pointer overflow-auto"
+            style={{ height: size.height - 50 }} // ensures scrollbar space
+            onClick={handleBringToFront}
           >
             <MDEditor.Markdown source={markdownContent} />
           </div>

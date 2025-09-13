@@ -505,14 +505,17 @@ export default function Dashboard() {
                 About Us
               </Link>
             </li>
+            <li
+        onClick={toggleSharingLog}
+              className="flex items-center p-2 bg-gray-700 hover:bg-gray-600 rounded cursor-pointer transition"
+            >
+              <FiInfo className="mr-2" />
+                      {showSharingLog ? "Hide Sharing" : "Manage"}
+
+            </li>
             
           </ul>
-            <button
-        onClick={toggleSharingLog}
-        className="bg-white border border-green-600 text-green-600 px-4 py-2 rounded-md font-medium shadow-sm hover:bg-green-50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-green-500"
-      >
-        {showSharingLog ? "Hide Sharing" : "Manage"}
-      </button>
+           
 
       {showSharingLog && <SharingLog token={token} onClose={toggleSharingLog} />}
           <div className="absolute bottom-6 left-0 w-full px-4">

@@ -28,7 +28,6 @@ export default function SharingLog({ token, onClose }) {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      // Attach shared user info
       const notesWithUsers = await Promise.all(
         res.data.map(async (note) => {
           if (!note.sharedWith?.length) {
@@ -65,7 +64,6 @@ export default function SharingLog({ token, onClose }) {
     }
   };
 
-  // Revoke access
   const revokeAccess = async (noteId, userId) => {
     try {
       await axios.post(
@@ -80,7 +78,6 @@ export default function SharingLog({ token, onClose }) {
     }
   };
 
-  // Update access level
   const updateAccess = async (noteId, userId, newLevel) => {
     try {
       await axios.post(
@@ -95,95 +92,108 @@ export default function SharingLog({ token, onClose }) {
     }
   };
 
-  // Initial load
   useEffect(() => {
     if (token) fetchNotes();
   }, [token]);
 
   return (
-    <div className="fixed top-20 right-4 w-96 bg-white border shadow-lg rounded-lg z-50 max-h-[80vh] overflow-y-auto">
-      {/* Header */}
-      <div className="flex items-center justify-between px-4 py-2 bg-gray-100 rounded-t">
-        <h2 className="font-bold text-lg">Sharing Log</h2>
-        <button
-          onClick={onClose}
-          aria-label="Close sharing log"
-          className="text-gray-600 hover:text-gray-900 text-xl leading-none"
-        >
-          ×
-        </button>
-      </div>
+    <div className="fixed inset-0 z-50 flex items-start justify-center md:justify-end">
+      {/* Background overlay (mobile usability) */}
+      <div
+        className="absolute inset-0 bg-black bg-opacity-30"
+        onClick={onClose}
+      ></div>
 
-      {/* Content */}
-      <div className="p-4">
-        {loading ? (
-          <p className="text-gray-500">Loading...</p>
-        ) : notes.length === 0 ? (
-          <p className="text-gray-500">No notes available</p>
-        ) : (
-          notes.map((note) => (
-            <div key={note._id} className="border p-3 rounded mb-3">
-              <h3 className="font-semibold mb-2">
-                {note.title || "Untitled Note"}
-              </h3>
+      <div
+        className="
+          relative bg-gray-900 text-white rounded-t-lg md:rounded-lg shadow-lg
+          w-full h-[80vh] md:h-auto md:w-96
+          mt-auto md:mt-20 md:mr-4
+          max-h-[80vh] overflow-y-auto
+        "
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between px-4 py-3 bg-gray-800 rounded-t-lg sticky top-0">
+          <h2 className="font-bold text-lg">Sharing Log</h2>
+          <button
+            onClick={onClose}
+            aria-label="Close sharing log"
+            className="text-gray-300 hover:text-white text-2xl"
+          >
+            ×
+          </button>
+        </div>
 
-              {note.owner === currentUserId ? (
-                <>
-                  <p className="text-sm text-gray-600 mb-2">Shared With:</p>
-                  {note.sharedWithUsers?.length ? (
-                    <ul className="space-y-2">
-                      {note.sharedWithUsers.map((sw) => (
-                        <li
-                          key={sw.userId}
-                          className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2"
-                        >
-                          <div className="flex items-center gap-2">
-                            <span className="font-medium">
-                              {sw.userNameOrEmail}
-                            </span>
-                            <select
-                              value={sw.accessLevel}
-                              onChange={(e) =>
-                                updateAccess(
-                                  note._id,
-                                  sw.userId,
-                                  e.target.value
-                                )
-                              }
-                              className="border rounded px-2 py-1"
-                            >
-                              <option value="read">Read</option>
-                              <option value="write">Write</option>
-                              <option value="comment">Comment</option>
-                            </select>
-                          </div>
-                          <button
-                            onClick={() => revokeAccess(note._id, sw.userId)}
-                            className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+        {/* Content */}
+        <div className="p-4 space-y-6">
+          {loading ? (
+            <p className="text-gray-400">Loading...</p>
+          ) : notes.length === 0 ? (
+            <p className="text-gray-400">No notes available</p>
+          ) : (
+            notes.map((note) => (
+              <div
+                key={note._id}
+                className="border border-gray-700 rounded-lg overflow-hidden"
+              >
+                <h3 className="font-semibold text-center bg-gray-700 px-3 py-2">
+                  File: {note.title || "Untitled Note"}
+                </h3>
+
+                {note.owner === currentUserId ? (
+                  <div className="p-3 space-y-3">
+                    <p className="text-sm text-gray-300">Shared With:</p>
+                    {note.sharedWithUsers?.length ? (
+                      <ul className="space-y-3">
+                        {note.sharedWithUsers.map((sw) => (
+                          <li
+                            key={sw.userId}
+                            className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2"
                           >
-                            Revoke
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p className="text-gray-500">Not shared with anyone</p>
-                  )}
-                </>
-              ) : (
-                <p className="text-sm text-gray-600">
-                  ✅ Shared with you (access:{" "}
-                  {
-                    note.sharedWithUsers?.find(
-                      (sw) => sw.userId === currentUserId
-                    )?.accessLevel
-                  }
-                  )
-                </p>
-              )}
-            </div>
-          ))
-        )}
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="font-medium">
+                                {sw.userNameOrEmail}
+                              </span>
+                              <select
+                                value={sw.accessLevel}
+                                onChange={(e) =>
+                                  updateAccess(note._id, sw.userId, e.target.value)
+                                }
+                                className="border border-gray-600 bg-gray-800 text-white rounded px-2 py-1 text-sm"
+                              >
+                                <option value="read">Read</option>
+                                <option value="write">Write</option>
+                                <option value="comment">Comment</option>
+                              </select>
+                            </div>
+                            <button
+                              onClick={() => revokeAccess(note._id, sw.userId)}
+                              className="px-3 py-1 bg-red-600 hover:bg-red-700 text-sm rounded"
+                            >
+                              Revoke
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="text-gray-200">Not shared with anyone</p>
+                    )}
+                  </div>
+                ) : (
+                  <p className="p-3 text-sm text-gray-200">
+                    ✅ Shared with you (access:{" "}
+                    {
+                      note.sharedWithUsers?.find(
+                        (sw) => sw.userId === currentUserId
+                      )?.accessLevel
+                    }
+                    )
+                  </p>
+                )}
+              </div>
+            ))
+          )}
+        </div>
       </div>
     </div>
   );
