@@ -138,7 +138,7 @@ export default function DraggableModal({ isOpen, onClose, results, title }) {
         {/* Content */}
         {!minimized && (
           <div
-            className="mt-2 prose max-w-none cursor-pointer overflow-auto"
+            className="mt-2 prose max-w-none cursor-pointer overflow-auto pl-2"
             style={{ height: size.height - 50 }} // ensures scrollbar space
             onClick={handleBringToFront}
           >
