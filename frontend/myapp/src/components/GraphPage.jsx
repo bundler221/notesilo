@@ -3,7 +3,7 @@ import React, { useEffect, useState, useRef } from "react";
 import ForceGraph2D from "react-force-graph-2d";
 import { useNavigate } from "react-router-dom";
 
-const API_URL = "http://localhost:5000/api/graph/all";
+const API_URL = import.meta.env.VITE_API_URL + "/api/graph/all";
 
 /* ---------- helper: arrange nodes in rows ---------- */
 function rowLayout(nodes, perRow = 5, dx = 260, dy = 170) {

@@ -16,6 +16,7 @@ import {
   FiMoreVertical,
   FiUser,
   FiShare2,
+  FiTrendingUp,
   FiInfo,
   FiLogOut,
 } from "react-icons/fi";
@@ -363,7 +364,7 @@ useEffect(() => {
                 onClick={() => navigate("/graph")}
                 className=" flex border border-gray-900 text-gray-900 hover:bg-gray-900 hover:text-white font-medium px-5 py-2 rounded-lg shadow-md transition-all duration-200 ease-in-out"
               >
-                <FiShare2 className=" flex mr-1" /> Map
+                <FiTrendingUp className=" flex mr-1" /> Map
               </button>
 
               <button
