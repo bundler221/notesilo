@@ -7,7 +7,9 @@ import { Link, useNavigate } from "react-router-dom";
 import NoteEditor from "./NoteEditor";
 import UserGuide from './UserGuide'
 import AboutUs from "./AboutUs";
+import { useLocation } from "react-router-dom";
 import SharingLog from "./SharingLog";
+import NoteSearch from "./NoteSearch";
 import {
   FiMenu,
   FiChevronLeft,
@@ -57,6 +59,32 @@ export default function Dashboard() {
   // const [query, setQuery] = useState("");
   // const [results, setResults] = useState([]);
   const [showModal, setShowModal] = useState(false);
+  const location = useLocation();
+
+  
+useEffect(() => {
+  const params = new URLSearchParams(location.search);
+  const noteId = params.get("noteId");
+
+  if (noteId && notes.length > 0) {
+    const found = notes.find((n) => n._id === noteId);
+    if (found) {
+      setSelectedNote(found);
+    } else {
+      (async () => {
+        try {
+          const res = await axios.get(
+            `${import.meta.env.VITE_API_URL}/api/notes/${noteId}`,
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+          setSelectedNote(res.data);
+        } catch (err) {
+          console.error("Failed to fetch note:", err);
+        }
+      })();
+    }
+  }
+}, [location.search, notes, token]);
 
 
 
@@ -335,7 +363,7 @@ export default function Dashboard() {
                 onClick={() => navigate("/graph")}
                 className=" flex border border-gray-900 text-gray-900 hover:bg-gray-900 hover:text-white font-medium px-5 py-2 rounded-lg shadow-md transition-all duration-200 ease-in-out"
               >
-                <FiShare2 className=" flex mr-1" /> Graph
+                <FiShare2 className=" flex mr-1" /> Map
               </button>
 
               <button
@@ -402,25 +430,54 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <ul className="space-y-3">
-            {notes.length === 0 ? (
-              <p className="text-gray-400">No notes found</p>
-            ) : (
-              notes.map((note) => (
-                <li
-                  key={note._id}
-                  onClick={() => {
-                    setSelectedNote(note);
-                    setLeftOpen(false);
-                  }}
-                  className={`p-2 rounded cursor-pointer transition ${selectedNote?._id === note._id ? "bg-gray-700" : "hover:bg-gray-700"
-                    }`}
-                >
-                  {note.title || "Untitled Note"}
-                </li>
-              ))
-            )}
-          </ul>
+          {/* === Search Bar === */}
+<div className="mb-4">
+  <input
+    type="text"
+    placeholder="Search notes..."
+    value={searchQuery}
+    onChange={(e) => setSearchQuery(e.target.value)}
+    className="w-full p-2 rounded border border-gray-600 bg-gray-800 text-white placeholder-gray-400 focus:ring-2 focus:ring-green-400 focus:outline-none"
+  />
+</div>
+
+
+{/* === Notes List === */}
+<ul className="space-y-3 overflow-y-auto">
+  {(searchQuery.trim()
+    ? notes.filter((note) =>
+        (note.title || "Untitled Note")
+          .toLowerCase()
+          .includes(searchQuery.toLowerCase())
+      )
+    : notes
+  ).length === 0 ? (
+    <p className="text-gray-400">No notes found</p>
+  ) : (
+    (searchQuery.trim()
+      ? notes.filter((note) =>
+          (note.title || "Untitled Note")
+            .toLowerCase()
+            .includes(searchQuery.toLowerCase())
+        )
+      : notes
+    ).map((note) => (
+      <li
+        key={note._id}
+        onClick={() => {
+          setSelectedNote(note);
+          setLeftOpen(false);
+        }}
+        className={`p-2 rounded cursor-pointer transition ${
+          selectedNote?._id === note._id ? "bg-gray-700" : "hover:bg-gray-700"
+        }`}
+      >
+        {note.title || "Untitled Note"}
+      </li>
+    ))
+  )}
+</ul>
+
         </div>
 
         {/* EDITOR */}
