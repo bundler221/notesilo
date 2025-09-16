@@ -33,27 +33,31 @@ export default function NoteActions({ note, token, canEdit, onSave }) {
 
   // ✅ Save
   const handleSave = async () => {
-    if (!canEdit) return;
-    try {
-      const url = note?._id
-        ? `${import.meta.env.VITE_API_URL}/api/notes/${note._id}`
-        : `${import.meta.env.VITE_API_URL}/api/notes`;
-      const method = note?._id ? "put" : "post";
+  if (!canEdit) return;
+  try {
+    const url = note?._id
+      ? `${import.meta.env.VITE_API_URL}/api/notes/${note._id}`
+      : `${import.meta.env.VITE_API_URL}/api/notes`;
+    const method = note?._id ? "put" : "post";
 
-      const res = await axios({
-        method,
-        url,
-        headers: { Authorization: `Bearer ${token}` },
-        data: { title: note.title, content: note.content },
-      });
+    // 👇 Add this line
+    console.log("Saving note:", note);
 
-      onSave?.({ ...res.data, canWrite: true });
-      toast.success("Note saved!");
-    } catch (err) {
-      console.error("❌ Save failed:", err);
-      toast.error("Failed to save.");
-    }
-  };
+    const res = await axios({
+      method,
+      url,
+      headers: { Authorization: `Bearer ${token}` },
+      data: { title: note.title, content: note.content },
+    });
+
+    onSave?.({ ...res.data, canWrite: true });
+    toast.success("Note saved!");
+  } catch (err) {
+    console.error("❌ Save failed:", err);
+    toast.error("Failed to save.");
+  }
+};
+
 
   // ✅ Delete
   const handleDelete = async () => {

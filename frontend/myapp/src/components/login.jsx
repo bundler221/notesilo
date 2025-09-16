@@ -10,35 +10,67 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [errors, setErrors] = useState({}); // ✅ store error messages
   const navigate = useNavigate();
 
   async function handleLogin(e) {
     e.preventDefault();
+    setErrors({});
+
+    let newErrors = {};
+    if (!email) newErrors.email = "Email is required";
+    if (!password) newErrors.password = "Password is required";
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
     const data = await login(email, password);
+
     if (data.token) {
       localStorage.setItem("token", data.token);
       navigate("/dashboard");
     } else {
-      alert(data.msg || "Login failed");
+      // ✅ Check if backend specifically says "User not found"
+      if (data.msg && data.msg.toLowerCase().includes("not exist")) {
+        setErrors({ general: "User does not exist" });
+      } else {
+        setErrors({ general: data.msg || "Login failed" });
+      }
     }
   }
 
   async function handleRegister(e) {
     e.preventDefault();
+    setErrors({});
 
+    const passwordRegex = /^(?=.[A-Z])(?=.\d)(?=.*[^A-Za-z0-9]).{10,}$/;
+    let newErrors = {};
+
+    if (!username) newErrors.username = "Username is required";
+    if (!email) newErrors.email = "Email is required";
+    if (!password) newErrors.password = "Password is required";
     if (password !== confirmPassword) {
-      setPassword("");
-      setConfirmPassword("");
-      alert("Password and Confirm Password do not match");
+      newErrors.confirmPassword = "Passwords do not match";
+    }
+    if (password && !passwordRegex.test(password)) {
+      newErrors.password =
+        "Password must be 10+ chars, include 1 uppercase, 1 number & 1 special char.";
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
       return;
     }
 
     const data = await register(username, email, password);
+
     if (data.token) {
       localStorage.setItem("token", data.token);
       navigate("/dashboard");
     } else {
-      alert(data.msg || "Register failed");
+      setErrors({ general: data.msg || "Register failed" });
     }
   }
 
@@ -57,20 +89,8 @@ export default function Login() {
         </h3>
         <p className="text-base md:text-lg leading-relaxed max-w-lg text-gray-600">
           NoteSilo is a modern note-taking web app that lets you create, edit,
-          and organize your notes anytime, anywhere. With secure authentication
-          (Email/Password & Google login), your notes stay private while being
-          easily accessible...
+          and organize your notes anytime, anywhere...
         </p>
-      </div>
-
-      {/* ---------- Intro top for small screens only ---------- */}
-      <div className="w-full md:hidden flex flex-col justify-center p-6 text-gray-800 text-center">
-        <h1 className="text-3xl font-bold mb-2">
-          Welcome to <span className="text-gray-900">NoteSilo</span>
-        </h1>
-        <h3 className="text-lg mb-4 font-semibold text-gray-700">
-          Your personal, secure, and smart note-taking companion
-        </h3>
       </div>
 
       {/* ---------- Auth Card ---------- */}
@@ -83,27 +103,43 @@ export default function Login() {
           {/* Login Form */}
           {!isRegister && (
             <form className="flex flex-col gap-4" onSubmit={handleLogin}>
-              <div className="flex items-center border rounded-lg px-3">
-                <FiMail className="text-gray-500 mr-2" />
-                <input
-                  type="email"
-                  placeholder="Email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full p-2 outline-none text-sm md:text-base"
-                />
+              <div>
+                <div className="flex items-center border rounded-lg px-3">
+                  <FiMail className="text-gray-500 mr-2" />
+                  <input
+                    type="email"
+                    placeholder="Email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full p-2 outline-none text-sm md:text-base"
+                  />
+                </div>
+                {errors.email && (
+                  <p className="text-red-500 text-xs mt-1">{errors.email}</p>
+                )}
               </div>
 
-              <div className="flex items-center border rounded-lg px-3">
-                <FiLock className="text-gray-500 mr-2" />
-                <input
-                  type="password"
-                  placeholder="Password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full p-2 outline-none text-sm md:text-base"
-                />
+              <div>
+                <div className="flex items-center border rounded-lg px-3">
+                  <FiLock className="text-gray-500 mr-2" />
+                  <input
+                    type="password"
+                    placeholder="Password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full p-2 outline-none text-sm md:text-base"
+                  />
+                </div>
+                {errors.password && (
+                  <p className="text-red-500 text-xs mt-1">{errors.password}</p>
+                )}
               </div>
+
+              {errors.general && (
+                <p className="text-red-500 text-sm text-center">
+                  {errors.general}
+                </p>
+              )}
 
               <div className="text-gray-600 hover:underline flex justify-end text-sm md:text-base">
                 <Link to="/forgot-password">Forgot Password?</Link>
@@ -121,49 +157,77 @@ export default function Login() {
           {/* Register Form */}
           {isRegister && (
             <form className="flex flex-col gap-4" onSubmit={handleRegister}>
-              <div className="flex items-center border rounded-lg px-3">
-                <FiUser className="text-gray-500 mr-2" />
-                <input
-                  type="text"
-                  placeholder="Username"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  className="w-full p-2 outline-none text-sm md:text-base"
-                />
+              <div>
+                <div className="flex items-center border rounded-lg px-3">
+                  <FiUser className="text-gray-500 mr-2" />
+                  <input
+                    type="text"
+                    placeholder="Username"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    className="w-full p-2 outline-none text-sm md:text-base"
+                  />
+                </div>
+                {errors.username && (
+                  <p className="text-red-500 text-xs mt-1">{errors.username}</p>
+                )}
               </div>
 
-              <div className="flex items-center border rounded-lg px-3">
-                <FiMail className="text-gray-500 mr-2" />
-                <input
-                  type="email"
-                  placeholder="Email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full p-2 outline-none text-sm md:text-base"
-                />
+              <div>
+                <div className="flex items-center border rounded-lg px-3">
+                  <FiMail className="text-gray-500 mr-2" />
+                  <input
+                    type="email"
+                    placeholder="Email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full p-2 outline-none text-sm md:text-base"
+                  />
+                </div>
+                {errors.email && (
+                  <p className="text-red-500 text-xs mt-1">{errors.email}</p>
+                )}
               </div>
 
-              <div className="flex items-center border rounded-lg px-3">
-                <FiLock className="text-gray-500 mr-2" />
-                <input
-                  type="password"
-                  placeholder="Password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full p-2 outline-none text-sm md:text-base"
-                />
+              <div>
+                <div className="flex items-center border rounded-lg px-3">
+                  <FiLock className="text-gray-500 mr-2" />
+                  <input
+                    type="password"
+                    placeholder="Password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full p-2 outline-none text-sm md:text-base"
+                  />
+                </div>
+                {errors.password && (
+                  <p className="text-red-500 text-xs mt-1">{errors.password}</p>
+                )}
               </div>
 
-              <div className="flex items-center border rounded-lg px-3">
-                <FiLock className="text-gray-500 mr-2" />
-                <input
-                  type="password"
-                  placeholder="Confirm Password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full p-2 outline-none text-sm md:text-base"
-                />
+              <div>
+                <div className="flex items-center border rounded-lg px-3">
+                  <FiLock className="text-gray-500 mr-2" />
+                  <input
+                    type="password"
+                    placeholder="Confirm Password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="w-full p-2 outline-none text-sm md:text-base"
+                  />
+                </div>
+                {errors.confirmPassword && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.confirmPassword}
+                  </p>
+                )}
               </div>
+
+              {errors.general && (
+                <p className="text-red-500 text-sm text-center">
+                  {errors.general}
+                </p>
+              )}
 
               <button
                 type="submit"
@@ -183,6 +247,7 @@ export default function Login() {
                 <div className="flex-grow h-px bg-gray-300"></div>
               </div>
               <button
+                type="button"
                 className="w-full flex items-center justify-center gap-2 border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 font-medium py-2 md:py-3 rounded-lg transition"
                 onClick={googleLogin}
               >
@@ -219,16 +284,6 @@ export default function Login() {
             )}
           </div>
         </div>
-      </div>
-
-      {/* ---------- Description for small screens only ---------- */}
-      <div className="w-full md:hidden p-6 text-gray-800 text-center">
-        <p className="font-sans text-base leading-relaxed max-w-lg mx-auto text-gray-600">
-          NoteSilo is a modern note-taking web app that lets you create, edit,
-          and organize your notes anytime, anywhere. With secure authentication
-          (Email/Password & Google login), your notes stay private while being
-          easily accessible...
-        </p>
       </div>
     </div>
   );

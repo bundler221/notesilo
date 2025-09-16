@@ -10,6 +10,7 @@ import AboutUs from "./AboutUs";
 import { useLocation } from "react-router-dom";
 import SharingLog from "./SharingLog";
 import NoteSearch from "./NoteSearch";
+
 import {
   FiMenu,
   FiChevronLeft,
@@ -27,6 +28,7 @@ import {
   renameNote,
   aiSearchAPI
 } from "./NotesEditingFunctionalities";
+import RenameModal from "./RenameModal";
 
 
 
@@ -37,6 +39,8 @@ export default function Dashboard() {
   const [selectedNote, setSelectedNote] = useState(null);
   const [leftOpen, setLeftOpen] = useState(false);
   const [rightOpen, setRightOpen] = useState(false);
+  const [showRenameModal, setShowRenameModal] = useState(false);
+
   const [fileMenuOpen, setFileMenuOpen] = useState(false);
   const [showSharingLog, setShowSharingLog] = useState(false);
   const token = localStorage.getItem("token");
@@ -49,6 +53,7 @@ export default function Dashboard() {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
+  
 
   const [isSearching, setIsSearching] = useState(false);
   const [isSummarizing, setIsSummarizing] = useState(false);
@@ -119,6 +124,7 @@ useEffect(() => {
     }
   }, [token]);
 
+  
   // === Fetch Notes ===
   const fetchNotes = async () => {
     if (!token) return;
@@ -247,17 +253,11 @@ useEffect(() => {
       }
 
       case "Rename": {
-        const newTitle = prompt("Enter new title:", selectedNote.title);
-        if (newTitle) {
-          const updated = renameNote(selectedNote, newTitle);
-          setSelectedNote(updated);
-          setNotes((prev) =>
-            prev.map((n) => (n._id === updated._id ? updated : n))
-          );
-        }
-        setFileMenuOpen(false);
-        break;
-      }
+  setShowRenameModal(true);
+  setFileMenuOpen(false);
+  break;
+}
+
 
       default:
         console.log("Unknown action:", action);
@@ -585,8 +585,22 @@ useEffect(() => {
             </button>
 
           </div>
+          
+
         </div>
       </div>
+      <RenameModal
+  isOpen={showRenameModal}
+  currentTitle={selectedNote?.title}
+  onClose={() => setShowRenameModal(false)}
+  onRename={(newTitle) => {
+    const updated = renameNote(selectedNote, newTitle);
+    setSelectedNote(updated);
+    setNotes((prev) =>
+      prev.map((n) => (n._id === updated._id ? updated : n))
+    );
+  }}
+/>
     </div>
   );
 

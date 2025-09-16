@@ -9,6 +9,7 @@ export default function NoteEditor({ note, token, onSave, canEdit }) {
   const [content, setContent] = useState(note?.content || "");
   const [notes, setNotes] = useState([]);
   const [suggestions, setSuggestions] = useState([]);
+  // eslint-disable-next-line no-unused-vars
   const [query, setQuery] = useState("");
   const [cursorPos, setCursorPos] = useState(0);
   const [showResults, setShowResults] = useState(false);

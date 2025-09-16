@@ -253,12 +253,13 @@ const linkRegex = /\[\[([^\]#:]+)(?:[:#]([^\]]+))?\]\]/g;
   }
 
   if (newRefs.length > 0) {
-    console.log('Adding references:', newRefs);
-    note.references.push(...newRefs);
-    await note.save();
-  } else {
-    console.log('No new references to add');
-  }
+  console.log('Adding references:', newRefs);
+  note.references.push(...newRefs);
+  await note.save();
+} else {
+  console.log('No new references to add');
+}
+
 }
 
 
@@ -293,10 +294,11 @@ exports.updateNote = async (req, res) => {
     }
 
     if (typeof content === "string") {
-      note.content = content;
-      note.references = [];
-      await parseAndAddReferences(note, req.user._id);
-    }
+  note.content = content;
+  note.references = [];
+  await parseAndAddReferences(note, req.user._id);
+}
+
 
     if (Array.isArray(tags)) note.tags = tags;
 
