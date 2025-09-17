@@ -202,10 +202,13 @@ exports.forgotPassword = async (req, res) => {
     const resetUrl = `${process.env.CLIENT_URL}/reset-password?token=${token}`;
 
     await sendEmail(
-      user.email,
-      "Reset your password",
-      `<p>Hello,</p><p>Click <a href="${resetUrl}">here</a> to reset your password. This link expires in 1 hour.</p>`
-    );
+  user.email,
+  "Reset your password",
+  `<p>Hello ${user.username || ""},</p>
+   <p>Click <a href="${resetUrl}">here</a> to reset your password.</p>
+   <p>This link expires in 1 hour.</p>`
+);
+
 
     res.json({ msg: "Password reset link sent" });
   } catch (err) {
