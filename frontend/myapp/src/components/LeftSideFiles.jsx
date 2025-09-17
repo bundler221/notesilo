@@ -303,7 +303,7 @@ useEffect(() => {
                       {[
                         "Summarize this note",
                         "Prepare questions",
-                        "Translate this note",
+                        // "Translate this note",
                         "Export to PDF",
                         "Rename",
                       ].map((action) => {
@@ -358,8 +358,8 @@ useEffect(() => {
             {/* CENTER: project name — absolutely centered on large screens to avoid layout shifting */}
             <div className="absolute left-1/2 transform -translate-x-1/2 hidden lg:block">
               <h1 className="text-3xl font-bold "><span className="bg-gradient-to-r from-gray-300 via-gray-500 to-gray-700 bg-clip-text text-transparent animate-pulse">
-                N
-              </span>oteSilo</h1>
+                NoteSilo
+              </span></h1>
             </div>
 
             {/* RIGHT group */}
