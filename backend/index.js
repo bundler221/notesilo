@@ -11,6 +11,7 @@ const authRoutes = require("./routes/authRoutes");
 const noteRoutes = require("./routes/noteRoutes");
 const graphRoutes = require("./routes/graphRoutes");
 const uploadRoutes = require("./routes/uploadRoutes");
+const adminRoutes = require("./routes/adminRoutes");
 
 const app = express();
 connectDB();
@@ -29,6 +30,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/notes", noteRoutes);
 app.use("/api/graph", graphRoutes);
 app.use("/api", uploadRoutes);
+app.use("/api/admin", adminRoutes);
 
 // Health check
 app.get("/api/health", (_req, res) => res.json({ ok: true }));

@@ -32,3 +32,14 @@ exports.getUserById = async (req, res) => {
   }
 };
 
+// Get all users (admin only)
+exports.getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find().select("username email _id role createdAt");
+    res.json(users);
+  } catch (err) {
+    console.error("❌ getAllUsers error:", err);
+    res.status(500).json({ msg: "Failed to fetch users", error: err.message });
+  }
+};
+

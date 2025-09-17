@@ -1,4 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import "intro.js/introjs.css";
+
 import "./App.css";
 import Login from "./components/login";
 import Register from "./components/Register";
@@ -12,6 +14,7 @@ import LeftSideFiles from "./components/LeftSideFiles"
 import { Toaster } from "react-hot-toast";
 import UserGuide from "./components/UserGuide";
 import AboutUs from "./components/AboutUs";
+import AdminDashboard from "./components/AdminDashboard";
 function App() {
   return (
     <BrowserRouter>
@@ -20,6 +23,7 @@ function App() {
         <Route path="/" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/notes" element={<Notes />} />
+        <Route path="/register" element={<Register />} />
         <Route path="/oauth-success" element={<OauthSuccess />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
@@ -27,6 +31,7 @@ function App() {
         <Route path="/dashboard" element={<LeftSideFiles/>}/>
         <Route path="user-guide" element={<UserGuide/>}/>
         <Route path="about-us" element={<AboutUs/>}/>
+        <Route path="/admin" element={<AdminDashboard />} />
       </Routes>
     </BrowserRouter>
   );

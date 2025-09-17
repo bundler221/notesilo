@@ -1,18 +1,30 @@
 import { useState } from "react";
 
+const API_URL = import.meta.env.VITE_API_URL + "/api/auth";
+
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
 
   async function handleSubmit(e) {
     e.preventDefault();
-    const res = await fetch("http://localhost:5000/api/auth/", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email }),
-    });
-    const data = await res.json();
-    setMessage(data.msg);
+    try {
+      const res = await fetch(`${API_URL}/forgot-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.msg || "Failed to send reset link");
+      }
+
+      const data = await res.json();
+      setMessage(data.msg);
+    } catch (err) {
+      setMessage(err.message);
+    }
   }
 
   return (
@@ -23,10 +35,7 @@ export default function ForgotPassword() {
           Enter your email to get a reset link
         </h3>
 
-        <form
-          onSubmit={handleSubmit}
-          className="flex flex-col space-y-4"
-        >
+        <form onSubmit={handleSubmit} className="flex flex-col space-y-4">
           <input
             type="email"
             placeholder="Email Address"

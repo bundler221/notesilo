@@ -26,7 +26,7 @@ export default function NoteSearch({ notes, onSelectNote, onClose }) {
   };
 
   return (
-    <div className="relative w-full">
+    <div className="search-bar relative w-full">
       <input
         type="text"
         placeholder="Search notes..."

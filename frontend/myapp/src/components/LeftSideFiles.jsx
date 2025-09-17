@@ -29,6 +29,7 @@ import {
   aiSearchAPI
 } from "./NotesEditingFunctionalities";
 import RenameModal from "./RenameModal";
+import Onboarding from "./Onboarding";
 
 
 
@@ -76,6 +77,7 @@ useEffect(() => {
     const found = notes.find((n) => n._id === noteId);
     if (found) {
       setSelectedNote(found);
+      navigate("/dashboard", { replace: true }); // remove noteId from URL
     } else {
       (async () => {
         try {
@@ -84,13 +86,14 @@ useEffect(() => {
             { headers: { Authorization: `Bearer ${token}` } }
           );
           setSelectedNote(res.data);
+          navigate("/dashboard", { replace: true }); // also clean URL
         } catch (err) {
           console.error("Failed to fetch note:", err);
         }
       })();
     }
   }
-}, [location.search, notes, token]);
+}, [location.search, notes, token, navigate]);
 
 
 
@@ -268,6 +271,7 @@ useEffect(() => {
   const currentFile = selectedNote?.title || "Untitled Note";
   return (
     <div className="relative flex flex-col min-h-screen bg-gray-50">
+      <Onboarding />
       {/* === NAVBAR === */}
       <div className="bg-white p-3 shadow-md relative z-10">
         <div className="max-w-full mx-auto relative">
@@ -278,7 +282,7 @@ useEffect(() => {
               {/* Hamburger */}
               <button
                 onClick={() => setLeftOpen(true)}
-                className="p-2 text-2xl bg-gray-100 rounded-md hover:bg-gray-200 transition"
+                className="sidebar p-2 text-2xl bg-gray-100 rounded-md hover:bg-gray-200 transition"
               >
                 <FiMenu />
               </button>
@@ -418,7 +422,7 @@ useEffect(() => {
             <div className="flex items-center space-x-2">
               <button
                 onClick={handleAddNote}
-                className="px-2 py-1 text-sm bg-green-600 hover:bg-green-500 rounded transition"
+                className="add-note-btn px-2 py-1 text-sm bg-green-600 hover:bg-green-500 rounded transition"
               >
                 + New
               </button>

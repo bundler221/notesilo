@@ -14,16 +14,24 @@ export async function register(username, email, password) {
     });
 
     if (!res.ok) {
-      const errorData = await res.json();
-      throw new Error(errorData.message || "Registration failed");
+      let errorMessage = "Registration failed";
+      try {
+        const errorData = await res.json();
+        console.error("Backend error response:", errorData);
+        errorMessage = errorData.message || JSON.stringify(errorData) || errorMessage;
+      } catch {
+        // ignore
+      }
+      throw new Error(errorMessage);
     }
 
-    return res.json();
+    return await res.json();
   } catch (err) {
     console.error("Register error:", err.message);
     throw err;
   }
 }
+
 
 export async function login(email, password) {
   try {
@@ -34,11 +42,18 @@ export async function login(email, password) {
     });
 
     if (!res.ok) {
-      const errorData = await res.json();
-      throw new Error(errorData.message || "Login failed");
+      // Try to parse error response safely
+      let errorMessage = "Login failed";
+      try {
+        const errorData = await res.json();
+        errorMessage = errorData.message || errorMessage;
+      } catch {
+        // ignore JSON parse error
+      }
+      throw new Error(errorMessage);
     }
 
-    return res.json();
+    return await res.json();
   } catch (err) {
     console.error("Login error:", err.message);
     throw err;
