@@ -22,6 +22,11 @@ const Onboarding = () => {
               intro: "Click here to create a new note.",
             },
             {
+              element: ".rightbar",
+              intro: "This is your Right sidebar. Use it to manage notes.",
+              disableInteraction: true,   // 👈 prevents it from waiting for a click
+            },
+            {
               element: ".search-bar",
               intro: "Use the search bar to find notes.",
             },
@@ -33,16 +38,61 @@ const Onboarding = () => {
           exitOnEsc: false,
         });
 
-        // 👉 Open sidebar when leaving step 1
-        intro.onbeforechange((el) => {
-          if (el?.classList.contains("sidebar")) {
-            const sidebarBtn = document.querySelector(".sidebar");
-            if (sidebarBtn) sidebarBtn.click();
+       const ensureSidebarOpen = () => {
+          const sidebarEl = document.querySelector(".sidebar");
+          const hamburgerBtn = document.querySelector(".hamburger-btn");
+          if (!sidebarEl || !hamburgerBtn) return;
+          if (sidebarEl.classList.contains("-translate-x-full")) {
+            hamburgerBtn.click();
           }
-        });
+        };
+
+        const ensureRightOpen = () => {
+          const rightEl = document.querySelector(".rightbar");
+          const rightBtn = document.querySelector(".right-btn");
+          if (!rightEl || !rightBtn) return;
+          if (rightEl.classList.contains("translate-x-full")) {
+            rightBtn.click();
+          }
+        };
+
+        const closeSidebar = () => {
+  const sidebarEl = document.querySelector(".sidebar");
+  const closeBtn = document.querySelector(".leftham"); // arrow button
+  if (sidebarEl && closeBtn && !sidebarEl.classList.contains("-translate-x-full")) {
+    closeBtn.click();
+  }
+};
+
+const closeRightbar = () => {
+  const rightEl = document.querySelector(".rightbar");
+  const closeBtn = document.querySelector(".rightham"); // arrow button
+  if (rightEl && closeBtn && !rightEl.classList.contains("translate-x-full")) {
+    closeBtn.click();
+  }
+};
+
+
+        // Make sure the left sidebar is visible before starting step 1
+        ensureSidebarOpen();
+
+       
+intro.onbeforechange((el) => {
+  if (el?.classList.contains("rightbar")) {
+    ensureRightOpen(); // 👈 now it's used
+  }
+});
+
+ intro.onafterchange((el) => {
+  // After showing search bar, close both sidebars
+  if (el?.classList.contains("search-bar")) {
+    closeSidebar();
+    closeRightbar();
+  }
+});
 
         intro.start();
-        localStorage.setItem("firstLogin", "false");
+        localStorage.setItem("firstLogin", "true");
       }, 300);
     }
   }, []);

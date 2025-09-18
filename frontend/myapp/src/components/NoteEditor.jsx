@@ -91,7 +91,7 @@ const handleImageUpload = async (file) => {
 
 
 
-    // eslint-disable-next-line no-unused-vars
+     
     const uploadImageCommand = {
     name: "upload-image",
     keyCommand: "upload-image",
@@ -219,10 +219,11 @@ const handleImageUpload = async (file) => {
     return sections;
   };
 
- const renderWithReferences = (text) => {
+ const renderWithReferences = (text, depth = 0, maxDepth = 5) => {
   if (!text) return text;
+  if (depth > maxDepth) return text; // 🔒 safety to prevent infinite loops
 
-  return text.replace(/\[\[(.+?): (.+?)\]\]/g, (_, noteTitle, headingText) => {
+  let replaced = text.replace(/\[\[(.+?): (.+?)\]\]/g, (_, noteTitle, headingText) => {
     const refNote = notes.find((n) => n.title === noteTitle);
     if (!refNote) return `[[${noteTitle}: ${headingText}]]`;
 
@@ -233,7 +234,15 @@ const handleImageUpload = async (file) => {
     const innerMarkdown = target.body.join("\n");
     return `### ${noteTitle}: ${headingText}\n\n${innerMarkdown}`;
   });
+
+  // 👇 Run recursively until no references remain
+  if (/\[\[(.+?): (.+?)\]\]/.test(replaced)) {
+    return renderWithReferences(replaced, depth + 1, maxDepth);
+  }
+
+  return replaced;
 };
+
 
 
 

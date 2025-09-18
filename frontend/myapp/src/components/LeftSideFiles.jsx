@@ -282,7 +282,7 @@ useEffect(() => {
               {/* Hamburger */}
               <button
                 onClick={() => setLeftOpen(true)}
-                className="sidebar p-2 text-2xl bg-gray-100 rounded-md hover:bg-gray-200 transition"
+                className="hamburger-btn p-2 text-2xl bg-gray-100 rounded-md hover:bg-gray-200 transition"
               >
                 <FiMenu />
               </button>
@@ -373,7 +373,7 @@ useEffect(() => {
 
               <button
                 onClick={() => setRightOpen(true)}
-                className="p-2 text-2xl bg-gray-100 rounded-md hover:bg-gray-200 transition"
+                className="right-btn p-2 text-2xl bg-gray-100 rounded-md hover:bg-gray-200 transition"
               >
                 <FiMoreVertical />
               </button>
@@ -413,8 +413,8 @@ useEffect(() => {
       {/* === MAIN === */}
       <div className="flex flex-1 overflow-hidden">
         {/* LEFT SIDEBAR */}
-        <div
-          className={`fixed top-0 left-0 h-full bg-gray-900 text-white p-4 transition-transform duration-300 ease-in-out ${leftOpen ? "translate-x-0" : "-translate-x-full"
+        <div 
+          className={`sidebar fixed top-0 left-0 h-full bg-gray-900 text-white p-4 transition-transform duration-300 ease-in-out ${leftOpen ? "translate-x-0" : "-translate-x-full"
             } w-64 z-50`}
         >
           <div className="flex justify-between items-center mb-4">
@@ -428,7 +428,7 @@ useEffect(() => {
               </button>
               <button
                 onClick={() => setLeftOpen(false)}
-                className="p-1 text-2xl bg-gray-700 hover:bg-gray-600 rounded-md transition"
+                className="leftham p-1 text-2xl bg-gray-700 hover:bg-gray-600 rounded-md transition"
               >
                 <FiChevronLeft />
               </button>
@@ -525,13 +525,13 @@ useEffect(() => {
 
         {/* RIGHT SIDEBAR */}
         <div
-          className={`fixed top-0 right-0 h-full bg-gray-900 text-white p-4 transition-transform duration-300 ease-in-out ${rightOpen ? "translate-x-0" : "translate-x-full"
+          className={`rightbar fixed top-0 right-0 h-full bg-gray-900 text-white p-4 transition-transform duration-300 ease-in-out ${rightOpen ? "translate-x-0" : "translate-x-full"
             } w-64 z-50`}
         >
           <div className="flex items-center justify-start mb-4 space-x-2">
             <button
               onClick={() => setRightOpen(false)}
-              className="p-1 text-2xl bg-gray-700 hover:bg-gray-600 rounded-md transition"
+              className="rightham p-1 text-2xl bg-gray-700 hover:bg-gray-600 rounded-md transition"
             >
               <FiChevronLeft className="rotate-180" />
             </button>
