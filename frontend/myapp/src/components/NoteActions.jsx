@@ -3,12 +3,17 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import DraggableModal from "./DraggableModal";
 
+
 export default function NoteActions({ note, token, canEdit, onSave }) {
   const [showShare, setShowShare] = useState(false);
   const [shareUser, setShareUser] = useState(null);
   const [typedUser, setTypedUser] = useState("");
   const [accessLevel, setAccessLevel] = useState("read");
   const [results, setResults] = useState([]);
+  const [showDelete, setShowDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+
 
   // ✅ Summarization & Questions
   const [summary, setSummary] = useState("");
@@ -33,30 +38,36 @@ export default function NoteActions({ note, token, canEdit, onSave }) {
 
   // ✅ Save
   const handleSave = async () => {
-  if (!canEdit) return;
-  try {
-    const url = note?._id
-      ? `${import.meta.env.VITE_API_URL}/api/notes/${note._id}`
-      : `${import.meta.env.VITE_API_URL}/api/notes`;
-    const method = note?._id ? "put" : "post";
+    if (!canEdit) return;
 
-    // 👇 Add this line
-    console.log("Saving note:", note);
+    try {
+      const url = note?._id
+        ? `${import.meta.env.VITE_API_URL}/api/notes/${note._id}`
+        : `${import.meta.env.VITE_API_URL}/api/notes`;
+      const method = note?._id ? "put" : "post";
 
-    const res = await axios({
-      method,
-      url,
-      headers: { Authorization: `Bearer ${token}` },
-      data: { title: note.title, content: note.content },
-    });
-
-    onSave?.({ ...res.data, canWrite: true });
-    toast.success("Note saved!");
-  } catch (err) {
-    console.error("❌ Save failed:", err);
-    toast.error("Failed to save.");
-  }
+      const payload = {
+  title: (note?.title ?? "").trim() || "Untitled",
+  content: note?.content ?? "",
 };
+
+      console.log("Saving note:", { ...payload, _id: note?._id });
+
+      const res = await axios({
+        method,
+        url,
+        headers: { Authorization: `Bearer ${token}` },
+        data: payload,
+      });
+
+      onSave?.({ ...res.data, canWrite: true });
+      toast.success("Note saved!");
+    } catch (err) {
+      console.error("❌ Save failed:", err);
+      toast.error("Failed to save.");
+    }
+  };
+
 
 
   // ✅ Delete
@@ -183,11 +194,12 @@ export default function NoteActions({ note, token, canEdit, onSave }) {
           {note?._id && (
             <>
               <button
-                onClick={handleDelete}
-                className="bg-red-500  hover:bg-black  text-white px-4 py-2 rounded-md font-medium shadow-sm transition"
-              >
-                Delete
-              </button>
+  onClick={() => setShowDelete(true)}
+  className="bg-red-500 hover:bg-black text-white px-4 py-2 rounded-md font-medium shadow-sm transition"
+>
+  Delete
+</button>
+
 
               <button
                 onClick={() => setShowShare(true)}
@@ -275,6 +287,53 @@ export default function NoteActions({ note, token, canEdit, onSave }) {
           </div>
         </div>
       )}
+
+{showDelete && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+    <div className="w-[90%] max-w-md bg-white border shadow-xl rounded-lg p-5">
+      <h3 className="font-semibold mb-2 text-red-600">Delete Note</h3>
+      <p className="text-sm text-gray-700 mb-4">
+        This will permanently delete “{note?.title || "Untitled"}”. This action cannot be undone.
+      </p>
+
+      <div className="flex justify-end gap-2">
+        <button
+          onClick={() => setShowDelete(false)}
+          className="bg-gray-200 text-gray-800 hover:bg-gray-300 px-3 py-1 rounded-md font-medium transition"
+          disabled={deleting}
+        >
+          Cancel
+        </button>
+        <button
+          onClick={async () => {
+            if (!canEdit || !note?._id) return;
+            setDeleting(true);
+            try {
+              await axios.delete(
+                `${import.meta.env.VITE_API_URL}/api/notes/${note._id}`,
+                { headers: { Authorization: `Bearer ${token}` } }
+              );
+              toast.success("Note deleted!");
+              setShowDelete(false);
+              onSave?.(null);
+            } catch (err) {
+              console.error("❌ Delete failed:", err);
+              toast.error("Failed to delete.");
+            } finally {
+              setDeleting(false);
+            }
+          }}
+          className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-md font-medium transition"
+          disabled={deleting}
+        >
+          {deleting ? "Deleting..." : "Delete"}
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
+
 
       {/* Use DraggableModal for summary */}
       <DraggableModal

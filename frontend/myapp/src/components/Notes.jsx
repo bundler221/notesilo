@@ -67,24 +67,31 @@ export default function Notes() {
     fetchNotes();
   }, [token]);
 
-  const handleAddNote = () => setSelectedNote({ canWrite: true });
+const handleAddNote = () => {
+  setSelectedNote({ title: "Untitled", content: "", canWrite: true });
+};
 
 
-  const handleNoteSave = (savedNote) => {
+
+const handleNoteSave = (savedNote) => {
   if (!savedNote) {
-    // note deleted
-    setNotes((prev) => prev.filter((n) => n._id !== selectedNote._id));
+    setNotes(prev => prev.filter(n => n._id !== selectedNote?._id));
     setSelectedNote(null);
     return;
   }
 
-  setNotes((prev) => {
-    const exists = prev.find((n) => n._id === savedNote._id);
-    if (exists) return prev.map((n) => (n._id === savedNote._id ? savedNote : n));
-    return [savedNote, ...prev];
+  setNotes(prev => {
+    const exists = prev.find(n => n._id === savedNote._id);
+    return exists ? prev.map(n => (n._id === savedNote._id ? savedNote : n)) : [savedNote, ...prev];
   });
-  setSelectedNote(savedNote);
+
+  setSelectedNote(prev => {
+    if (!prev) return savedNote;
+    const mergedContent = (savedNote.content === "" && prev.content) ? prev.content : savedNote.content;
+    return { ...savedNote, content: mergedContent };
+  });
 };
+
 
 
   const handleLogout = () => {

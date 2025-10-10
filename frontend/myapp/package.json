@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@heroicons/react": "^2.2.0",
     "@milkdown/core": "^7.3.0",
     "@milkdown/plugin-listener": "^7.3.0",
     "@milkdown/preset-commonmark": "^7.3.0",

@@ -405,3 +405,34 @@ exports.getNotesWithUsers = async (req, res) => {
     res.status(500).json({ msg: "Failed to fetch notes", error: err.message });
   }
 };
+
+// controllers/noteController.js
+
+exports.updateNoteTitle = async (req, res) => {
+  try {
+    const { title } = req.body;
+    const note = req.note;
+
+    if (!title || typeof title !== "string" || !title.trim()) {
+      return res.status(400).json({ msg: "Title is required" });
+    }
+
+    // 🔒 Prevent duplicate title for the same owner
+    const existing = await Note.findOne({
+      owner: req.user._id,
+      title: { $regex: new RegExp(`^${title.trim()}$`, "i") },
+      _id: { $ne: note._id } // exclude current note
+    });
+
+    if (existing) {
+      return res.status(400).json({ msg: "A note with this title already exists" });
+    }
+
+    note.title = title.trim();
+    await note.save();
+
+    res.json({ msg: "Title updated successfully", note });
+  } catch (err) {
+    res.status(500).json({ msg: "Update title failed", error: err.message });
+  }
+};

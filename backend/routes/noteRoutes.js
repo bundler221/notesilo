@@ -12,7 +12,8 @@ const {
   getNotesWithUsers,
   summarizeNote,
   questions,
-  aiSearchAPI
+  aiSearchAPI,
+  updateNoteTitle
 } = require("../controllers/noteController");
 const { protect } = require("../middlewares/authMiddleware");
 const { requireNoteAccess } = require("../middlewares/accessMiddleware");
@@ -31,6 +32,7 @@ router.post("/:id/share", requireNoteAccess("owner"), shareNote);
 router.post("/:id/revoke", requireNoteAccess("owner"), revokeAccess);
 router.post("/:id/references", requireNoteAccess("write"), addReference);
 router.delete("/:id/references/:toNoteId", requireNoteAccess("write"), removeReference);
+router.patch("/:id/title", requireNoteAccess("write"), updateNoteTitle);
 
 // ✅ Summarize note
 router.post("/:id/summarize", requireNoteAccess("read"), summarizeNote);

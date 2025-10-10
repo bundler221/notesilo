@@ -11,6 +11,7 @@ export default function NoteEditor({ note, token, onSave, canEdit }) {
   const [suggestions, setSuggestions] = useState([]);
   // eslint-disable-next-line no-unused-vars
   const [query, setQuery] = useState("");
+  const lastNoteIdRef = useRef(null);
   const [cursorPos, setCursorPos] = useState(0);
   const [showResults, setShowResults] = useState(false);
   const [results, setResults] = useState("");
@@ -22,6 +23,34 @@ export default function NoteEditor({ note, token, onSave, canEdit }) {
   );
 
  const [suggestionPos, setSuggestionPos] = useState({ top: 0, left: 0 });
+
+
+useEffect(() => {
+  if (!note) return;
+
+  const incomingId = note._id || "__draft__";
+  const switched = lastNoteIdRef.current !== incomingId;
+  lastNoteIdRef.current = incomingId;
+
+  const incomingTitle = note.title ?? "";
+  const incomingContent = note.content ?? "";
+
+  // Always sync both fields on note switch (new selection), even if empty
+  if (switched) {
+    setTitle(incomingTitle);
+    setContent(incomingContent);
+    return;
+  }
+
+  // Same note: update only if changed, and avoid clobbering edits with empty
+  setTitle(prev => (prev !== incomingTitle ? incomingTitle : prev));
+  setContent(prev => {
+    if (incomingContent === "" && prev !== "") return prev;
+    return prev !== incomingContent ? incomingContent : prev;
+  });
+// eslint-disable-next-line react-hooks/exhaustive-deps
+}, [note?._id, note?.title, note?.content]);
+
 
 useEffect(() => {
   if (!suggestions.length) return;
@@ -121,12 +150,21 @@ const handleImageUpload = async (file) => {
   };
 
   // Load note when prop changes
-  useEffect(() => {
-    if (note) {
-      setTitle(note.title || "Untitled");
-      setContent(note.content || "");
-    }
-  }, [note]);
+useEffect(() => {
+  if (!note) return;
+  const incomingTitle = note.title ?? "";
+  const incomingContent = note.content ?? "";
+
+  setTitle(prev => (prev !== incomingTitle ? incomingTitle : prev));
+
+  setContent(prev => {
+    // Avoid wiping text if incoming content is empty (common after title-only rename)
+    if (incomingContent === "" && prev !== "") return prev;
+    return prev !== incomingContent ? incomingContent : prev;
+  });
+// eslint-disable-next-line react-hooks/exhaustive-deps
+}, [note?._id, note?.title, note?.content]);
+
 
   // Fetch all notes
   useEffect(() => {

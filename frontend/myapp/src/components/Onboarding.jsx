@@ -92,7 +92,7 @@ intro.onbeforechange((el) => {
 });
 
         intro.start();
-        localStorage.setItem("firstLogin", "true");
+        localStorage.setItem("firstLogin", "false");
       }, 300);
     }
   }, []);

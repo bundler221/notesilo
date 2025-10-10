@@ -1,4 +1,4 @@
-//notesFeaturesRoutes.js
+// notesFeaturesRoutes.js
 const express = require("express");
 const bodyParser = require("body-parser");
 const OpenAI = require("openai");
@@ -9,6 +9,7 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 router.use(bodyParser.json());
 
+// --- Summarize Note ---
 router.post("/summarize", async (req, res) => {
   try {
     const { content } = req.body;
@@ -26,6 +27,7 @@ router.post("/summarize", async (req, res) => {
   }
 });
 
+// --- Generate Study Questions ---
 router.post("/questions", async (req, res) => {
   try {
     const { content } = req.body;
@@ -43,6 +45,30 @@ router.post("/questions", async (req, res) => {
       .filter((q) => q);
 
     res.json({ questions });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// --- User Questions on Notes ---
+router.post("/user-questions", async (req, res) => {
+  try {
+    const { content, question } = req.body;
+
+    if (!question || !content) {
+      return res.status(400).json({ error: "Both 'content' and 'question' are required" });
+    }
+
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        { role: "system", content: "You are a helpful assistant that answers questions based on notes content." },
+        { role: "user", content: `Note:\n${content}\n\nQuestion:\n${question}` },
+      ],
+    });
+
+    const answer = completion.choices[0].message.content.trim();
+    res.json({ answer });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
