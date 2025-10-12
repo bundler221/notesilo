@@ -8,7 +8,6 @@ on:
 
 jobs:
   backend-lint:
-    name: Lint Backend
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -24,15 +23,8 @@ jobs:
         run: |
           cd backend
           npx eslint . || true
-      - name: Post backend linter results as PR comments
-        uses: reviewdog/action-eslint@v1
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          reporter: github-pr-review
-          level: warning
 
   frontend-lint:
-    name: Lint Frontend
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -48,9 +40,3 @@ jobs:
         run: |
           cd frontend/myapp
           npm run lint || true
-      - name: Post frontend linter results as PR comments
-        uses: reviewdog/action-eslint@v1
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          reporter: github-pr-review
-          level: warning
