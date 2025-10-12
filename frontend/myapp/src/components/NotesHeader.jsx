@@ -19,7 +19,7 @@ export default function NotesHeader({
   useEffect(() => {
     if (!selectedNote) setSidebarOpen(true);
   }, [selectedNote]);
-
+//adding comments
   return (
     <>
       {/* Header */}
