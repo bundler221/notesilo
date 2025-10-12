@@ -1,0 +1,56 @@
+# .github/workflows/code-review.yml
+name: AI / Automated Code Review
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  backend-lint:
+    name: Lint Backend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+      - name: Install backend dependencies
+        run: |
+          cd backend
+          npm install
+      - name: Run backend linter
+        run: |
+          cd backend
+          npx eslint . || true
+      - name: Post backend linter results as PR comments
+        uses: reviewdog/action-eslint@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: github-pr-review
+          level: warning
+
+  frontend-lint:
+    name: Lint Frontend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+      - name: Install frontend dependencies
+        run: |
+          cd frontend/myapp
+          npm install
+      - name: Run frontend linter
+        run: |
+          cd frontend/myapp
+          npm run lint || true
+      - name: Post frontend linter results as PR comments
+        uses: reviewdog/action-eslint@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: github-pr-review
+          level: warning
