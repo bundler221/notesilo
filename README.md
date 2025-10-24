@@ -1,3 +1,5 @@
+# Please check out notesilo.netlify.app
+## gotta update readme file
 Sure! Here’s a concise list of the **4 main routes we’ve tested so far** that you can add to your README:
 
 ---
