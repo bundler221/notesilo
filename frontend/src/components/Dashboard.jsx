@@ -38,13 +38,13 @@ const Dashboard = ({ token, handleLogout }) => {
     const fetchData = async () => {
       try {
         // Example API calls (replace with your actual ones)
-        const notesRes = await fetch("/api/notes", {
+        const notesRes = await fetch(`${import.meta.env.VITE_API_URL || ""}/api/notes`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const notesData = await notesRes.json();
         setNotes(notesData);
 
-        const userRes = await fetch("/api/user", {
+        const userRes = await fetch(`${import.meta.env.VITE_API_URL || ""}/api/user`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const userData = await userRes.json();
@@ -59,7 +59,7 @@ const Dashboard = ({ token, handleLogout }) => {
   // Add a new note
   const handleAddNote = async () => {
     try {
-      const res = await fetch("/api/notes", {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || ""}/api/notes`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -78,7 +78,7 @@ const Dashboard = ({ token, handleLogout }) => {
   // Save note
   const handleNoteSave = async (note) => {
     try {
-      await fetch(`/api/notes/${note._id}`, {
+      await fetch(`${import.meta.env.VITE_API_URL || ""}/api/notes/${note._id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -104,7 +104,7 @@ const Dashboard = ({ token, handleLogout }) => {
       case "summarize":
         setIsSummarizing(true);
         try {
-          const res = await fetch(`/api/notes/${selectedNote._id}/summarize`, {
+          const res = await fetch(`${import.meta.env.VITE_API_URL || ""}/api/notes/${selectedNote._id}/summarize`, {
             headers: { Authorization: `Bearer ${token}` },
           });
           const data = await res.json();
@@ -120,7 +120,7 @@ const Dashboard = ({ token, handleLogout }) => {
       case "prepareQuestions":
         setIsPreparing(true);
         try {
-          const res = await fetch(`/api/notes/${selectedNote._id}/questions`, {
+          const res = await fetch(`${import.meta.env.VITE_API_URL || ""}/api/notes/${selectedNote._id}/questions`, {
             headers: { Authorization: `Bearer ${token}` },
           });
           const data = await res.json();
@@ -134,7 +134,7 @@ const Dashboard = ({ token, handleLogout }) => {
         break;
 
       case "exportPDF":
-        window.open(`/api/notes/${selectedNote._id}/export?token=${token}`);
+        window.open(`${import.meta.env.VITE_API_URL || ""}/api/notes/${selectedNote._id}/export?token=${token}`);
         break;
 
       case "rename":
@@ -151,7 +151,7 @@ const Dashboard = ({ token, handleLogout }) => {
     if (!query) return;
     setIsSearching(true);
     try {
-      const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || ""}/api/search?q=${encodeURIComponent(query)}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
