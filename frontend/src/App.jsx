@@ -24,8 +24,8 @@ function App() {
     try {
       Incognoir.init({
         apiBase: 'https://api.incognoir.com',
-        apiKey: 'sk_live_b5f533f74ad446bc',
-        environmentId: 'Notesilo-staging'
+        apiKey: import.meta.env.VITE_INCOGNOIR_API_KEY,
+        environmentId: import.meta.env.VITE_INCOGNOIR_ENVIRONMENT_ID
       });
       
       console.log('Incognoir initialized successfully');
