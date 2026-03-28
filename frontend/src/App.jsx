@@ -15,7 +15,25 @@ import { Toaster } from "react-hot-toast";
 import UserGuide from "./components/UserGuide";
 import AboutUs from "./components/AboutUs";
 import AdminDashboard from "./components/AdminDashboard";
+import Incognoir from '@incognoir/browser-sdk';
+import { useEffect } from 'react';
+
 function App() {
+  useEffect(() => {
+    // Initialize Incognoir with correct init function
+    try {
+      Incognoir.init({
+        apiBase: 'https://api.incognoir.com',
+        apiKey: 'sk_live_b5f533f74ad446bc',
+        environmentId: 'Notesilo-staging'
+      });
+      
+      console.log('Incognoir initialized successfully');
+    } catch (error) {
+      console.error('Failed to initialize Incognoir:', error);
+    }
+  }, []);
+
   return (
     <BrowserRouter>
     <Toaster position="top-right" reverseOrder={false} />
