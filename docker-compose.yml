@@ -49,6 +49,7 @@ services:
         - VITE_INCOGNOIR_API_KEY=${VITE_INCOGNOIR_API_KEY}
         - VITE_INCOGNOIR_ENVIRONMENT_ID=${VITE_INCOGNOIR_ENVIRONMENT_ID}
         - VITE_INCOGNOIR_API_BASE=${VITE_INCOGNOIR_API_BASE}
+        - VITE_API_URL=${VITE_API_URL}
     container_name: notesilo-frontend
     ports:
       - "2000:80"
