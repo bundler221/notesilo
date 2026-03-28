@@ -20,14 +20,14 @@ import { useEffect } from 'react';
 
 function App() {
   useEffect(() => {
-    // Debug: Check if environment variables are loaded
-    // console.log('=== VITE ENV DEBUG ===');
-    // console.log('VITE_INCOGNOIR_API_KEY:', import.meta.env.VITE_INCOGNOIR_API_KEY);
-    // console.log('VITE_INCOGNOIR_ENVIRONMENT_ID:', import.meta.env.VITE_INCOGNOIR_ENVIRONMENT_ID);
-    // console.log('API Key Length:', import.meta.env.VITE_INCOGNOIR_API_KEY?.length);
-    // console.log('API Key Format:', import.meta.env.VITE_INCOGNOIR_API_KEY?.startsWith('sk_') ? 'Valid format' : 'Invalid format');
-    // console.log('All VITE env vars:', Object.keys(import.meta.env).filter(key => key.startsWith('VITE_')));
-    // console.log('===================');
+    //Debug: Check if environment variables are loaded
+    console.log('=== VITE ENV DEBUG ===');
+    console.log('VITE_INCOGNOIR_API_KEY:', import.meta.env.VITE_INCOGNOIR_API_KEY);
+    console.log('VITE_INCOGNOIR_ENVIRONMENT_ID:', import.meta.env.VITE_INCOGNOIR_ENVIRONMENT_ID);
+    console.log('API Key Length:', import.meta.env.VITE_INCOGNOIR_API_KEY?.length);
+    console.log('API Key Format:', import.meta.env.VITE_INCOGNOIR_API_KEY?.startsWith('sk_') ? 'Valid format' : 'Invalid format');
+    console.log('All VITE env vars:', Object.keys(import.meta.env).filter(key => key.startsWith('VITE_')));
+    console.log('===================');
     
     // Initialize Incognoir with correct init function
     try {
