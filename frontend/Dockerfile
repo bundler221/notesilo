@@ -1,10 +1,9 @@
 # Build stage
 FROM node:18-alpine as build
 
-# Set working directory
 WORKDIR /app
 
-# Copy package.json and package-lock.json
+# Copy package files
 COPY package*.json ./
 
 # Install dependencies
@@ -14,14 +13,12 @@ RUN npm install
 COPY . .
 
 # Build the application
-ARG VITE_API_URL=""
-ENV VITE_API_URL=$VITE_API_URL
 RUN npm run build
 
 # Production stage
 FROM nginx:alpine
 
-# Copy built assets from build stage
+# Copy built app to nginx
 COPY --from=build /app/dist /usr/share/nginx/html
 
 # Copy nginx configuration
