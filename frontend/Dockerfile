@@ -12,6 +12,16 @@ RUN npm install
 # Copy source code
 COPY . .
 
+# Accept build arguments
+ARG VITE_INCOGNOIR_API_KEY
+ARG VITE_INCOGNOIR_ENVIRONMENT_ID
+ARG VITE_INCOGNOIR_API_BASE
+
+# Create .env file from build arguments
+RUN echo "VITE_INCOGNOIR_API_KEY=${VITE_INCOGNOIR_API_KEY}" > .env && \
+    echo "VITE_INCOGNOIR_ENVIRONMENT_ID=${VITE_INCOGNOIR_ENVIRONMENT_ID}" >> .env && \
+    echo "VITE_INCOGNOIR_API_BASE=${VITE_INCOGNOIR_API_BASE}" >> .env
+
 # Build the application (Vite will use .env file if it exists)
 RUN npm run build
 

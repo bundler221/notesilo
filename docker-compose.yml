@@ -45,6 +45,10 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        - VITE_INCOGNOIR_API_KEY=${VITE_INCOGNOIR_API_KEY}
+        - VITE_INCOGNOIR_ENVIRONMENT_ID=${VITE_INCOGNOIR_ENVIRONMENT_ID}
+        - VITE_INCOGNOIR_API_BASE=${VITE_INCOGNOIR_API_BASE}
     container_name: notesilo-frontend
     ports:
       - "2000:80"
