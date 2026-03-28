@@ -3,6 +3,11 @@ FROM node:18-alpine as build
 
 WORKDIR /app
 
+# Accept build arguments
+ARG VITE_INCOGNOIR_API_BASE
+ARG VITE_INCOGNOIR_API_KEY
+ARG VITE_INCOGNOIR_ENVIRONMENT_ID
+
 # Copy package files
 COPY package*.json ./
 
@@ -11,6 +16,11 @@ RUN npm install
 
 # Copy source code
 COPY . .
+
+# Set environment variables for build
+ENV VITE_INCOGNOIR_API_BASE=$VITE_INCOGNOIR_API_BASE
+ENV VITE_INCOGNOIR_API_KEY=$VITE_INCOGNOIR_API_KEY
+ENV VITE_INCOGNOIR_ENVIRONMENT_ID=$VITE_INCOGNOIR_ENVIRONMENT_ID
 
 # Build the application
 RUN npm run build
